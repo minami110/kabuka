@@ -23,3 +23,10 @@
 * `git commit -m "deploy"`
 * `git push`
 * merge to master
+
+### Google accounts
+* https://docs.google.com/spreadsheets/d/1MA-ufB6FPBc9kdq4H6ZoM0TX0mTeRFwlWNWuBxrYERk/edit#gid=0
+* kabuka.acnh
+* Doubutsu_0320
+*
+*
