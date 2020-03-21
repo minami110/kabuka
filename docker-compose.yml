@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  # frontside nuxt.js application
+  kabuka:
+    build: .
+    container_name: kabuka
+    command: >
+      sh -c "yarn install &&
+      yarn dev"
+    # tty: true
+    working_dir: /app/kabuka
+    volumes:
+      - ./src:/app/kabuka
+    ports:
+      - "3000:3000"
