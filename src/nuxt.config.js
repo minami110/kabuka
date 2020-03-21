@@ -15,6 +15,12 @@ export default {
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
     ]
   },
+  router: {
+    base: '/kabuka/' // for github.io
+  },
+  server: {
+    host: '0.0.0.0' // for docker
+  },
   /*
   ** Customize the progress-bar color
   */
@@ -58,7 +64,7 @@ export default {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
+    extend(config, ctx) {
     }
   }
 }
