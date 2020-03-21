@@ -1,32 +1,41 @@
 <template>
-  <div>
-    <p v-for="user in users" :key="user.id">
-      <span>{{ user.id }}</span>
-      <span>{{ user.name }}</span>
-    </p>
-  </div>
+  <b-container class="mt-3">
+    <h1>Kabuka for ACNH</h1>
+    <b-card title="members">
+      <div class="container">
+        <ul>
+          <li v-for="user in users" :key="user.id">
+            <span>{{user.id}} {{user.name}}</span>
+          </li>
+        </ul>
+        <button @click="clicked">data_test</button>
+        <span>{{ counter }}</span>
+      </div>
+    </b-card>
+  </b-container>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 
 export default {
-  name: "Sheettest",
-  // 以下のようにfetchで使用可
-  // ただし、googleapiはサーバーサイドでのみ動作するため、
-  // コンポーネント内で定義したmethodからは呼べない
-  // 以下はstore/sheet.js に各メソッドを書いた想定
-  async fetch({ store }) {
-    await store.dispatch("sheet/getSheetsData");
-  },
   data() {
-    return {};
+    return {
+      counter: 1
+    };
+  },
+  async fetch({ store }) {
+    await Promise.all([store.dispatch("sheet/getSheetsData")]);
   },
   computed: {
     ...mapGetters({
       users: "sheet/users"
     })
   },
-  methods: {}
+  methods: {
+    clicked() {
+      this.counter += 1;
+    }
+  }
 };
 </script>
