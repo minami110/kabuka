@@ -35,6 +35,7 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/vue-jsonp'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -55,8 +56,8 @@ export default {
     headers: {
       common: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Access-Control-Allow-Origin": "*"
-
+        "Access-Control-Allow-Origin": "http://localhost:3000/",
+        "Access-Control-Allow-Credentials": true
       }
     }
   },
