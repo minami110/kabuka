@@ -54,7 +54,7 @@ export default {
     proxy: true,
     headers: {
       common: {
-        "Content-Type": "application/json;charset=utf-8",
+        "Content-Type": "application/x-www-form-urlencoded",
         "Access-Control-Allow-Origin": "*"
 
       }
