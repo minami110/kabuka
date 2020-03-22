@@ -25,15 +25,19 @@ export default {
     };
   },
   async fetch({ store }) {
-    await Promise.all([store.dispatch("sheet/getUsers")]);
+    //await Promise.all([store.dispatch("sheet/getUsers")]);
   },
   computed: {
     ...mapGetters({
-      users: "sheet/users"
-    })
+      users_row: "sheet/users"
+    }),
+    users() {
+      return this.users_row;
+    }
   },
   methods: {
     clicked() {
+      this.$store.dispatch("sheet/getUsers");
       this.counter += 1;
     }
   }
