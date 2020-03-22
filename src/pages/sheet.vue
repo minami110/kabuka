@@ -25,7 +25,7 @@ export default {
     };
   },
   async fetch({ store }) {
-    await Promise.all([store.dispatch("sheet/getSheetsData")]);
+    await Promise.all([store.dispatch("sheet/getUsers")]);
   },
   computed: {
     ...mapGetters({

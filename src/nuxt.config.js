@@ -46,7 +46,11 @@ export default {
   modules: [
     // Doc: https://bootstrap-vue.js.org
     'bootstrap-vue/nuxt',
+    '@nuxtjs/axios',
   ],
+  axios: {
+    // proxyHeaders: false
+  },
   /*
   ** Build configuration
   */
@@ -55,13 +59,6 @@ export default {
     ** You can extend webpack config here
     */
     extend(config, ctx) {
-      config.node = {
-        fs: 'empty',
-        googleapis: 'empty',
-        child_process: 'empty',
-        net: 'empty',
-        tls: 'empty'
-      }
     }
   }
 }
