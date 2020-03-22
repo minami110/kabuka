@@ -28,10 +28,11 @@ export const actions = {
     async getUsers({ commit }) {
 
         // GAS API endpoint 
-        let url = "https://script.google.com/macros/s/AKfycbwy3lhLdxw519ix25ca8DBUJVTq_C3yi8II71bJrWGi215WuXRW/exec";
+        const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/'
+        let url = "/api-user/";
         let users = []
         await this.$axios
-            .get(url)
+            .get(CORS_PROXY + url)
             .then(r => {
                 users = r.data
             })

@@ -51,6 +51,17 @@ export default {
   ],
   axios: {
     // proxyHeaders: false
+    proxy: true,
+    headers: {
+      common: {
+        "Content-Type": "application/json;charset=utf-8",
+        "Access-Control-Allow-Origin": "*"
+
+      }
+    }
+  },
+  proxy: {
+    '/api-user/': { target: 'https://script.google.com/macros/s/AKfycbwy3lhLdxw519ix25ca8DBUJVTq_C3yi8II71bJrWGi215WuXRW/exec', pathRewrite: { '^/api-user/': '/' } }
   },
   /*
   ** Build configuration
