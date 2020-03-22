@@ -14,7 +14,9 @@ export const mutations = {
     set_users(state, users) {
         for (const index in users) {
             const user = users[index]
-            state.users = { ...state.users, [user.id]: user }
+            if (user.name) {
+                state.users = { ...state.users, [user.id]: user }
+            }
         }
     },
     set_user(state, user) {

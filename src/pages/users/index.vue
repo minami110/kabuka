@@ -5,11 +5,14 @@
       <div class="container">
         <ul>
           <li v-for="user in users" :key="user.id">
-            <span>{{user.id}} {{user.name}}</span>
+            <span>{{user.id}}</span>
+            <span>{{user.name}}</span>
+            <span>{{user['Island Name']}}</span>
+            <span>{{ user.fruits }}</span>
+            <span>{{ user.code }}</span>
           </li>
         </ul>
-        <button @click="clicked">data_test</button>
-        <span>{{ counter }}</span>
+        <button @click="clicked">fetch_member</button>
       </div>
     </b-card>
   </b-container>
@@ -20,9 +23,7 @@ import { mapGetters } from "vuex";
 
 export default {
   data() {
-    return {
-      counter: 1
-    };
+    return {};
   },
   async fetch({ store }) {
     //await Promise.all([store.dispatch("sheet/getUsers")]);
@@ -38,7 +39,6 @@ export default {
   methods: {
     clicked() {
       this.$store.dispatch("sheet/getUsers");
-      this.counter += 1;
     }
   }
 };

@@ -29,6 +29,7 @@ export default {
   ** Global CSS
   */
   css: [
+    '~/assets/css/kabuka.scss'
   ],
   /*
   ** Plugins to load before mounting the App
