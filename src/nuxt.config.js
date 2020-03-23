@@ -35,7 +35,6 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '~/plugins/vue-jsonp'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -48,20 +47,7 @@ export default {
   modules: [
     // Doc: https://bootstrap-vue.js.org
     'bootstrap-vue/nuxt',
-    '@nuxtjs/axios',
   ],
-  axios: {
-    proxy: true,
-    headers: {
-      common: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Access-Control-Allow-Origin": "*"
-      }
-    }
-  },
-  proxy: {
-    '/api-user/': { target: 'https://script.google.com/macros/s/AKfycbwy3lhLdxw519ix25ca8DBUJVTq_C3yi8II71bJrWGi215WuXRW/exec', pathRewrite: { '^/api-user/': '/' } }
-  },
   /*
   ** Build configuration
   */
