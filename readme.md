@@ -27,4 +27,3 @@
 ### Spleadsheet endpoint
 * GASを使用
 * https://script.google.com/d/1pxkDl1PLTqzwASYQKoG9AuJGierartQ84xZB-E9xf1hcWU_GJjNi03qZ/edit
-* users: 

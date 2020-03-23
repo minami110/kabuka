@@ -51,13 +51,11 @@ export default {
     '@nuxtjs/axios',
   ],
   axios: {
-    // proxyHeaders: false
     proxy: true,
     headers: {
       common: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Access-Control-Allow-Origin": "http://localhost:3000/",
-        "Access-Control-Allow-Credentials": true
+        "Access-Control-Allow-Origin": "*"
       }
     }
   },

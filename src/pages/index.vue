@@ -103,7 +103,12 @@ export default {
     this.loginuser.id = this.$route.query.user;
 
     // fetch users data from spleadsheet
-    await this.$store.dispatch("sheet/getUsers");
+    try {
+      await this.$store.dispatch("sheet/getUsers");
+    } catch (e) {
+      console.log(e); // Error: UNAUTHORIZED
+      this.bFetchingData = false;
+    }
     this.bFetchingData = false;
 
     // update loginuser infomation
