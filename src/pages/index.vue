@@ -19,11 +19,11 @@
         <card-user v-else />
       </b-col>
 
-      <!-- 常に表示するカード -->
-      <b-col cols="12" class="mt-3">
+      <b-col v-if="loginuser.id" cols="12" class="mt-3">
         <card-chart />
       </b-col>
-      <b-col cols="12" class="mt-3">
+
+      <b-col v-if="loginuser.id" cols="12" class="mt-3">
         <card-links />
       </b-col>
     </b-row>
@@ -31,7 +31,7 @@
     <!-- footer -->
     <b-row class="mt-3">
       <b-col cols="12" class="text-center text-muted small">
-        <span>version: 0.1.1.2</span>
+        <span>version: 0.1.2.3</span>
       </b-col>
     </b-row>
   </b-container>

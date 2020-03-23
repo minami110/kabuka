@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import format from "date-fns/format";
 import startOfWeek from "date-fns/startOfWeek";
 import add from "date-fns/add";
 
@@ -23,12 +24,12 @@ export default {
     monday() {
       const sunday = startOfWeek(new Date());
       const day = add(sunday, { days: 1 });
-      return this.$date_fns(day, "MM/dd");
+      return format(day, "MM/dd");
     },
     saturday() {
       const sunday = startOfWeek(new Date());
       const day = add(sunday, { days: 6 });
-      return this.$date_fns(day, "MM/dd");
+      return format(day, "MM/dd");
     }
   }
 };
