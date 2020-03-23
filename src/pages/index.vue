@@ -31,7 +31,7 @@
     <!-- footer -->
     <b-row class="mt-3">
       <b-col cols="12" class="text-center text-muted small">
-        <span>version: 0.1.0</span>
+        <span>version: 0.1.1.2</span>
       </b-col>
     </b-row>
   </b-container>
