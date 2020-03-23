@@ -1,4 +1,3 @@
-
 export default {
   mode: 'universal',
   /*
@@ -35,6 +34,7 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/date_fns'
   ],
   /*
   ** Nuxt.js dev-modules

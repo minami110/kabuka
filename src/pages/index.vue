@@ -64,6 +64,7 @@ export default {
       loginuser: "users/loginuser"
     })
   },
+
   async mounted() {
     // fetch users data from spleadsheet
     this.bFetchingData = true;

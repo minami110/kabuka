@@ -1,5 +1,3 @@
-// googleapisはサーバーサイドでのみ動作する
-
 export const state = () => ({
     loginuser: {
         id: "",
