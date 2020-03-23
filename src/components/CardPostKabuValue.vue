@@ -192,6 +192,12 @@ export default {
         value: value
       });
 
+      this.$bvToast.toast("現在のカブ値を報告", {
+        title: "Send!",
+        variant: "success",
+        autoHideDelay: 3000
+      });
+
       this.state.bSubmitting = false;
     }
   }

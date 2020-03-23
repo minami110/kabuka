@@ -77,6 +77,7 @@ export const actions = {
             bUpdate = true;
         }
 
+        // application/x-www-form-urlencoded 用のpayloadを作成
         const params = new URLSearchParams();
         params.append("id", id)
         params.append("date", dateStrJa)
@@ -84,6 +85,7 @@ export const actions = {
         params.append("userId", userId)
         params.append("value", value)
 
+        // fetch API のoptionsを作成
         const options = {
             method: "POST",
             body: params,
@@ -93,8 +95,10 @@ export const actions = {
         }
 
         // GAS API endpoint 
+        // https://script.google.com/d/1ywc9_hTS32gLsKn8g579dh9l_EodEPxEAwxO20Z5e2TLW2DuhiEe6JHT/edit
         let url = "https://script.google.com/macros/s/AKfycbxtILUd-tZEVU_SnXwCUxVfOF-XhhGThRKBZ0bfMFR_6O-g3Gg/exec";
 
+        // if update date, append action query
         if (bUpdate) {
             url += "?action=update"
         }

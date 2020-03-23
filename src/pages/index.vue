@@ -16,7 +16,7 @@
         <card-login v-if="!loginuser.id" />
 
         <!-- loginuser.id があれば, ユーザーカードを表示 -->
-        <card-user v-else />
+        <card-user v-else @logout="makeToast('logout!', 'Succeed to logout', 'success')" />
       </b-col>
 
       <b-col v-if="loginuser.id" cols="12" class="mt-3">
@@ -31,7 +31,7 @@
     <!-- footer -->
     <b-row class="mt-3">
       <b-col cols="12" class="text-center text-muted small">
-        <span>version: 0.1.2.3</span>
+        <span>version: 0.2.0.4</span>
       </b-col>
     </b-row>
   </b-container>
@@ -89,7 +89,15 @@ export default {
       }
     }
   },
-  methods: {}
+  methods: {
+    makeToast(title = "title", body = "body", variant = null) {
+      this.$bvToast.toast(body, {
+        title: title,
+        variant: variant,
+        autoHideDelay: 3000
+      });
+    }
+  }
 };
 </script>
 
