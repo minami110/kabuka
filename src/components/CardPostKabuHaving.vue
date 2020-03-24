@@ -1,5 +1,5 @@
 <template>
-  <b-form @submit="submit" class="mt-3">
+  <b-form @submit="submit">
     <b-card>
       <template v-slot:header>
         <h5 class="mb-0">
@@ -13,7 +13,7 @@
       <b-form-row>
         <b-col cols="5">
           <b-input-group size="sm" prepend="$">
-            <b-form-input type="number" size="sm" :value="100"></b-form-input>
+            <b-form-input type="number" size="sm" :value="100" readonly></b-form-input>
           </b-input-group>
         </b-col>
         <b-col class="text-center m-auto">
@@ -21,7 +21,7 @@
         </b-col>
         <b-col cols="6">
           <b-input-group size="sm" append="カブ">
-            <b-form-input type="number" size="sm"></b-form-input>
+            <b-form-input type="number" size="sm" readonly></b-form-input>
           </b-input-group>
         </b-col>
       </b-form-row>
@@ -32,7 +32,7 @@
         <b-col cols="12">
           <h6 class="mt-3">🐗のカブ売値</h6>
           <b-input-group size="sm" prepend="$" append="ベル">
-            <b-form-input type="number" size="sm" :value="100"></b-form-input>
+            <b-form-input type="number" size="sm" :value="100" readonly></b-form-input>
           </b-input-group>
 
           <span class="text-muted small">自分の島の, カブ売り値を入力</span>

@@ -1,19 +1,36 @@
 <template>
   <b-card>
     <b-card-title>
-      <span>Kabu Chart:</span>
-      <span>{{ monday }}</span>
-      <span>~</span>
-      <span>{{ saturday }}</span>
+      <h5>
+        <span>
+          Kabu Chart
+          <b-badge class="small">beta</b-badge>
+        </span>
+        <span>:</span>
+        <span>{{ monday }}</span>
+        <span>~</span>
+        <span>{{ saturday }}</span>
+        <span class="small text-muted">(Week: 1)</span>
+      </h5>
     </b-card-title>
 
-    <line-chart :chartdata="chartdata" :options="options" style="height:400px" />
+    <div v-if="isFetchingKabuValues">
+      <b-col cols="12" class="text-center">
+        <strong>カブ値のデータを読込中...</strong>
+        <b-spinner small label="Spinning"></b-spinner>
+      </b-col>
+    </div>
+    <div v-else>
+      <line-chart :chartdata="chartdata" :options="options" style="height:400px" />
+    </div>
   </b-card>
 </template>
 
 <script>
+// import vuex functions
 import { mapGetters } from "vuex";
 
+// import date-fns functions
 import format from "date-fns/format";
 import startOfWeek from "date-fns/startOfWeek";
 import add from "date-fns/add";
@@ -21,6 +38,7 @@ import parse from "date-fns/parse";
 import isSameWeek from "date-fns/isSameWeek";
 import getDay from "date-fns/getDay";
 
+// import components
 import LineChart from "~/components/LineChart";
 
 export default {
@@ -29,6 +47,9 @@ export default {
       options: {
         responsive: true,
         maintainAspectRatio: false
+      },
+      state: {
+        bMounted: false
       }
     };
   },
@@ -38,17 +59,28 @@ export default {
   computed: {
     ...mapGetters({
       users: "users/users",
-      kabuValues: "kabuValues/kabuValues"
+      kabuValues: "kabuValues/kabuValues",
+      store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
     }),
     monday() {
       const sunday = startOfWeek(new Date());
       const day = add(sunday, { days: 1 });
-      return format(day, "MM/dd");
+      return format(day, "M/d");
     },
     saturday() {
       const sunday = startOfWeek(new Date());
       const day = add(sunday, { days: 6 });
-      return format(day, "MM/dd");
+      return format(day, "M/d");
+    },
+    isFetchingKabuValues() {
+      if (!this.state.bMounted) {
+        return true;
+      }
+      if (this.store_bFetchingKabuValues) {
+        return true;
+      }
+
+      return false;
     },
     chartdata() {
       const result = {};
@@ -187,6 +219,7 @@ export default {
   },
   async mounted() {
     await this.$store.dispatch("kabuValues/getKabuValues");
+    this.state.bMounted = true;
   }
 };
 </script>

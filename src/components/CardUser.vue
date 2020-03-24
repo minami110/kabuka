@@ -14,7 +14,7 @@
       </b-col>
 
       <b-col cols="12" md="6">
-        <card-post-kabu-having class="mt-3" />
+        <card-post-kabu-having class="mt-3 mt-md-0" />
       </b-col>
     </b-row>
   </b-card>

@@ -5,7 +5,7 @@
     <b-row v-if="bFetchingData">
       <b-col cols="12" class="text-center">
         <strong>スプレッドシートにアクセス中...</strong>
-        <b-spinner small label="Spinning"></b-spinner>
+        <b-spinner small label="Spinning" />
       </b-col>
     </b-row>
 

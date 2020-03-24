@@ -1,13 +1,16 @@
 import format from 'date-fns/format'
 
 export const state = () => ({
-    // userid -> user
-    kabuValues: {}
+    kabuValues: {},
+    bFetchingKabuValues: false
 })
 
 export const getters = {
     kabuValues: state => {
         return state.kabuValues
+    },
+    bFetchingKabuValues: state => {
+        return state.bFetchingKabuValues
     }
 }
 
@@ -19,11 +22,23 @@ export const mutations = {
                 state.kabuValues = { ...state.kabuValues, [kabuValue.id]: kabuValue }
             }
         }
+    },
+    set_bFetchingKabuValues(state, bool) {
+        state.bFetchingKabuValues = bool;
     }
 }
 
 export const actions = {
-    async getKabuValues({ commit }) {
+    async getKabuValues({ state, commit }) {
+
+        if (state.bFetchingKabuValues) {
+            // already fetching
+            return;
+        }
+
+        // set fetching flag
+        commit("set_bFetchingKabuValues", true);
+
         // GAS API endpoint 
         // let url = "/api-user/";
         const options = {
@@ -54,6 +69,9 @@ export const actions = {
         if (kabuValues.length > 0) {
             commit("set_kabuValues", kabuValues)
         }
+
+        // set fetching flag
+        commit("set_bFetchingKabuValues", false);
     },
 
     async postKabuValue({ state, commit, dispatch }, { date, isPm, userId, value }) {

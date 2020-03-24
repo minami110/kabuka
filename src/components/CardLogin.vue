@@ -15,7 +15,7 @@
           </b-form-group>
         </b-col>
         <b-col cols="12" sm="6">
-          <b-button size="sm" type="submit" variant="primary">ログイン</b-button>
+          <b-button size="sm" block type="submit" variant="primary">ログイン</b-button>
         </b-col>
       </b-form-row>
     </b-form>
