@@ -14,7 +14,7 @@
 * goto `http://localhost:3000/kabuka/`
 
 ### deploy to github pages
-* merge to `origin/pre_deploy` branch
+* push or merge into `origin/pre_deploy` branch
 * run TravisCI
 
 ### Spleadsheet endpoint
