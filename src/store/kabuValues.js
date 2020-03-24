@@ -23,6 +23,9 @@ export const mutations = {
             }
         }
     },
+    set_kabuValue(state, date) {
+        state.kabuValues = { ...state.kabuValues, [date.id]: date }
+    },
     set_bFetchingKabuValues(state, bool) {
         state.bFetchingKabuValues = bool;
     }
@@ -135,6 +138,17 @@ export const actions = {
                 console.log('Looks like there was a problem: \n', error);
                 return false;
             });
+
+        // 送信後に, ローカルでデータを追加しておく
+        /*
+        commit("set_kabuValue", {
+            id: id,
+            date: dateStrJa + "00:00:00 GMT",
+            isPm: isPmNum,
+            userId: userId,
+            value, value
+        })
+        */
 
     }
 }

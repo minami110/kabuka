@@ -3,23 +3,22 @@
     <b-card>
       <template v-slot:header>
         <h5 class="mb-0">
-          <span>カブ値の報告</span>
-          <span>:</span>
-          <span>{{ formDateStr }}</span>
+          <strong>{{ formDateStr }}</strong>
           <span v-if="form.isPm">
             <b-badge pill variant="warning">PM</b-badge>
           </span>
           <span v-else>
             <b-badge pill variant="success">AM</b-badge>
           </span>
+          <span class="align-bottom">の🥬</span>
         </h5>
       </template>
 
       <b-form-row>
         <!-- カブ値入力フィールド -->
         <b-col cols="12">
-          <b-form-group description="🐻の買取価格を入力">
-            <b-input-group prepend="$" append="ベル" size="sm" class="mr-2">
+          <b-form-group>
+            <b-input-group prepend="💰" append="ベル" size="sm" class="mr-2">
               <b-input
                 size="sm"
                 placeholder="100"
@@ -28,6 +27,12 @@
                 :readonly="readOnlyValueInput"
               />
             </b-input-group>
+            <template #label>
+              <h6>🐻の買取値</h6>
+            </template>
+            <template #description>
+              <span class="text-muted small">{{ getLoginUserIslandName }}の, 🥬買取値を入力</span>
+            </template>
           </b-form-group>
         </b-col>
 
@@ -169,9 +174,16 @@ export default {
       } else {
         return false;
       }
+    },
+    getLoginUserIslandName() {
+      if (this.loginuser.islandName) {
+        return this.loginuser.islandName + "島";
+      } else {
+        return "島";
+      }
     }
   },
-  async mounted() {
+  mounted() {
     // detect current time
     const now = new Date();
     const hours = getHours(now);
@@ -189,14 +201,11 @@ export default {
     this.calender.maxData = now;
 
     // fetch KabuValues background
-    await this.$store.dispatch("kabuValues/getKabuValues");
+    this.$store.dispatch("kabuValues/getKabuValues");
 
     // init status
     this.state.bSubmitting = false;
     this.state.bMounted = true;
-
-    // update form.value
-    this.updateKabuValue();
   },
   methods: {
     updateKabuValue() {
@@ -231,7 +240,11 @@ export default {
     async submit(e) {
       e.preventDefault();
 
-      this.state.bSubmitting = true;
+      if (this.state.bSubmitting) {
+        return;
+      } else {
+        this.state.bSubmitting = true;
+      }
 
       // clear prev state
       this.state.date = null;
@@ -280,10 +293,11 @@ export default {
         value: value
       });
 
+      // トーストを表示
       this.$bvToast.toast("現在のカブ値を報告", {
         title: "Send!",
         variant: "success",
-        autoHideDelay: 3000
+        autoHideDelay: 2000
       });
 
       this.state.bSubmitting = false;
@@ -295,6 +309,14 @@ export default {
     },
     "form.isPm": function(val) {
       this.updateKabuValue();
+    },
+    store_bFetchingKabuValues: function(val) {
+      if (!val) {
+        if (!this.state.bSubmitting) {
+          // update form.value
+          this.updateKabuValue();
+        }
+      }
     }
   }
 };
