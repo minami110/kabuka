@@ -1,16 +1,22 @@
 <template>
   <b-card>
-    <b-card-title>こんにちは {{ loginuser.name }}さん</b-card-title>
+    <b-card-title>
+      <div class="d-flex">
+        <h4>{{ loginuser.name }} さん</h4>
+        <div class="small ml-auto">
+          <a href="#" @click="logout">ログアウト</a>
+        </div>
+      </div>
+    </b-card-title>
+    <b-row>
+      <b-col cols="12" md="6">
+        <card-post-kabu-value />
+      </b-col>
 
-    <card-post-kabu-value />
-
-    <card-post-kabu-having class="mt-3" />
-
-    <template v-slot:footer>
-      <b-form @submit="logout">
-        <b-button type="submit" size="sm" variant="danger">ログアウト</b-button>
-      </b-form>
-    </template>
+      <b-col cols="12" md="6">
+        <card-post-kabu-having class="mt-3" />
+      </b-col>
+    </b-row>
   </b-card>
 </template>
 
@@ -25,9 +31,15 @@ export default {
   data() {
     return {};
   },
+  computed: {
+    ...mapGetters({
+      loginuser: "users/loginuser"
+    })
+  },
   methods: {
     logout(e) {
       e.preventDefault();
+
       this.$store.dispatch({
         type: "users/logout"
       });
@@ -42,11 +54,6 @@ export default {
       // pushではなくreplaceを使用して, historyを残さない
       this.$router.replace({ query: query });
     }
-  },
-  computed: {
-    ...mapGetters({
-      loginuser: "users/loginuser"
-    })
   },
   components: {
     CardPostKabuValue,

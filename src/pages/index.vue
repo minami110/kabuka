@@ -31,13 +31,20 @@
     <!-- footer -->
     <b-row class="mt-3">
       <b-col cols="12" class="text-center text-muted small">
-        <span>version: 0.2.0.4</span>
+        <span>version: {{application_version}}</span>
       </b-col>
     </b-row>
   </b-container>
 </template>
 
+<style>
+input[type="text"] {
+  font-size: 16px;
+}
+</style>
+
 <script>
+// import vuex
 import { mapGetters } from "vuex";
 
 // import components
@@ -45,6 +52,9 @@ import CardLogin from "~/components/CardLogin";
 import CardUser from "~/components/CardUser";
 import CardLinks from "~/components/CardLinks";
 import CardChart from "~/components/CardChart";
+
+// import package info
+import package_info from "~/package.json";
 
 export default {
   components: {
@@ -62,7 +72,10 @@ export default {
     ...mapGetters({
       users: "users/users",
       loginuser: "users/loginuser"
-    })
+    }),
+    application_version() {
+      return package_info.version;
+    }
   },
 
   async mounted() {
@@ -94,7 +107,7 @@ export default {
       this.$bvToast.toast(body, {
         title: title,
         variant: variant,
-        autoHideDelay: 3000
+        autoHideDelay: 2000
       });
     }
   }

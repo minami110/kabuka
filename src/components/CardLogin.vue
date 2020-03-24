@@ -1,12 +1,23 @@
 <template>
   <b-card>
     <b-card-title>ログイン</b-card-title>
-    <b-alert v-model="alert.bFailedLogin" variant="danger" dismissible>ログインに失敗</b-alert>
     <b-form @submit="login">
-      <b-form-group>
-        <b-form-input v-model="form.name" size="sm" required placeholder="キャラクターの名前を入力" />
-      </b-form-group>
-      <b-button size="sm" type="submit" variant="primary">ログイン</b-button>
+      <b-form-row>
+        <b-col cols="12" sm="6">
+          <b-form-group size="sm">
+            <b-form-input v-model="form.name" size="sm" required placeholder="キャラクターの名前を入力" />
+            <template #description>
+              <ul class="small ml-n3 mt-2">
+                <li>スプレッドシートに登録した名前でログイン</li>
+                <li>ユーザー登録は, スプレッドシートを直接編集</li>
+              </ul>
+            </template>
+          </b-form-group>
+        </b-col>
+        <b-col cols="12" sm="6">
+          <b-button size="sm" type="submit" variant="primary">ログイン</b-button>
+        </b-col>
+      </b-form-row>
     </b-form>
   </b-card>
 </template>
@@ -19,11 +30,13 @@ export default {
     return {
       form: {
         name: ""
-      },
-      alert: {
-        bFailedLogin: false
       }
     };
+  },
+  computed: {
+    ...mapGetters({
+      loginuser: "users/loginuser"
+    })
   },
   methods: {
     login(e) {
@@ -39,6 +52,14 @@ export default {
       promise.then(r => {
         if (r) {
           // login success
+
+          // create toast
+          this.$bvToast.toast("こんにちは " + this.loginuser.name + "さん", {
+            title: "Success to login!",
+            variant: "success",
+            autoHideDelay: 2000
+          });
+
           // userクエリを追加
           let query = { ...this.$route.query };
           query["user"] = this.loginuser.id;
@@ -48,16 +69,15 @@ export default {
             () => {}
           );
         } else {
-          // login failed
-          this.alert.bFailedLogin = true;
+          // create toast
+          this.$bvToast.toast("ログインに失敗!", {
+            title: "Failed to login!",
+            variant: "danger",
+            autoHideDelay: 2000
+          });
         }
       });
     }
-  },
-  computed: {
-    ...mapGetters({
-      loginuser: "users/loginuser"
-    })
   }
 };
 </script>

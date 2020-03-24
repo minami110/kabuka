@@ -2,7 +2,7 @@
   <b-form @submit="submit" class="mt-3">
     <b-card>
       <template v-slot:header>
-        <h4 class="mb-0">
+        <h5 class="mb-0">
           <span>カブ値の報告</span>
           <span>:</span>
           <span>{{ formDateStr }}</span>
@@ -12,14 +12,14 @@
           <span v-else>
             <b-badge pill variant="success">AM</b-badge>
           </span>
-        </h4>
+        </h5>
       </template>
 
       <b-form-row>
         <!-- カブ値入力フィールド -->
-        <b-col cols="12" md="6">
+        <b-col cols="12">
           <b-form-group description="いまの買取価格を入力">
-            <b-input-group prepend="$" size="sm" class="mr-2">
+            <b-input-group prepend="$" append="ベル" size="sm" class="mr-2">
               <b-input
                 size="sm"
                 placeholder="100"
@@ -41,7 +41,7 @@
         </b-col>
 
         <!-- 過去のデータを更新する場合は, 日付フィールドを表示 -->
-        <b-col v-if="state.bShowDateForm" cols="6" class="mt-2">
+        <b-col v-if="state.bShowDateForm" cols="12" sm="10" class="mt-2">
           <b-form-datepicker
             id="datepicker-buttons"
             v-model="form.date"
@@ -52,7 +52,7 @@
             value-as-date
           />
         </b-col>
-        <b-col v-if="state.bShowDateForm" cols="6" class="mt-2">
+        <b-col v-if="state.bShowDateForm" cols="12" sm="2" class="mt-2">
           <b-form-checkbox v-model="form.isPm" class="mr-2">PM</b-form-checkbox>
         </b-col>
       </b-form-row>
@@ -62,10 +62,10 @@
           <b-button size="sm" variant="primary" disabled>日曜日は送信できません</b-button>
         </div>
         <div v-else>
-          <b-button v-if="state.bSubmitting" size="sm" variant="primary" disabled>
+          <b-button v-if="state.bSubmitting" block size="sm" variant="primary" disabled>
             <b-spinner small type="grow"></b-spinner>送信中...
           </b-button>
-          <b-button v-else type="submit" size="sm" variant="primary">送信</b-button>
+          <b-button v-else block type="submit" size="sm" variant="primary">送信</b-button>
         </div>
       </template>
     </b-card>
