@@ -81,10 +81,12 @@ export default {
     };
   },
   props: {
+    // chartの開始日, デフォルトは今週の日曜日
     beginDay: {
       type: Date,
       default: startOfWeek(new Date())
     },
+    // chartの表示期間(1週間単位)
     weekCount: {
       type: Number,
       default: 1
@@ -109,12 +111,11 @@ export default {
     isFetchingKabuValues() {
       if (!this.state.bMounted) {
         return true;
-      }
-      if (this.store_bFetchingKabuValues) {
+      } else if (this.store_bFetchingKabuValues) {
         return true;
+      } else {
+        return false;
       }
-
-      return false;
     },
     chartdata() {
       const result = {};
@@ -124,23 +125,11 @@ export default {
         return result;
       }
 
-      // propsから, ラベルを作成
-      // AM / PMごとにラベルを作成する
-      result.labels = [];
-      const _labelTotalCount = 7 * this.weekCount * 2;
-      for (var i = 0; i < _labelTotalCount; i++) {
-        const _dayDelta = i / 2;
-        const _d = add(this.beginDay, { days: _dayDelta });
-        let _ds = format(_d, "M/d");
-        if (i % 2) {
-          _ds += " PM";
-        } else {
-          _ds += " AM";
-        }
-        result.labels.push(_ds);
-      }
+      // 期間内の, ラベルのリストを取得
+      result.labels = this.getChartLabelList();
+      const _labelTotalCount = 7 * this.weekCount * 2; // あとでつかう
 
-      // 上記の範囲内のデータセットを抽出
+      // 上記の範囲内のデータセットを抽出する
       const kabuValuesInChart = [];
 
       for (const kabuValueId in this.kabuValues) {
@@ -223,8 +212,9 @@ export default {
         }
 
         // 最終のデータを作成する
+        const _userLabel = user.name + "@" + user["Island Name"];
         const _data = {
-          label: user.name,
+          label: _userLabel,
           borderColor: getUserColor(user_id),
           spanGaps: true,
           lineTension: 0,
@@ -246,6 +236,26 @@ export default {
       });
       */
 
+      return result;
+    }
+  },
+  methods: {
+    getChartLabelList() {
+      // propsから, ラベルを作成
+      // AM / PMごとにラベルを作成する
+      const result = [];
+      const _labelTotalCount = 7 * this.weekCount * 2;
+      for (var i = 0; i < _labelTotalCount; i++) {
+        const _dayDelta = i / 2;
+        const _d = add(this.beginDay, { days: _dayDelta });
+        let _ds = format(_d, "M/d");
+        if (i % 2) {
+          _ds += " PM";
+        } else {
+          _ds += " AM";
+        }
+        result.push(_ds);
+      }
       return result;
     }
   },
