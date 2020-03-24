@@ -79,7 +79,6 @@ export default {
       return package_info.version + "." + build_info.number;
     }
   },
-
   async mounted() {
     // fetch users data from spleadsheet
     this.bFetchingData = true;

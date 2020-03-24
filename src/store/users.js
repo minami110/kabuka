@@ -1,7 +1,8 @@
 export const state = () => ({
     loginuser: {
         id: "",
-        name: ""
+        name: "",
+        islandName: ""
     },
     // userid -> user
     users: {}
@@ -32,11 +33,12 @@ export const mutations = {
         try {
             state.loginuser = {
                 id: user.id,
-                name: user.name
+                name: user.name,
+                islandName: user["Island Name"].split("島")[0]
             }
         }
         catch (e) {
-            state.loginuser = { id: "", name: "" }
+            state.loginuser = { id: "", name: "", islandName: "" }
         }
     }
 }
@@ -79,6 +81,7 @@ export const actions = {
     loginUseName({ state, commit }, { name }) {
         for (const user_id in state.users) {
             const user = state.users[user_id];
+            // check username 
             if (name == user.name) {
                 commit("set_loginuser", user)
                 return true;

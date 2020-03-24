@@ -48,6 +48,14 @@ export default {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // 凡例
+        legend: {
+          position: "bottom",
+          labels: {
+            boxWidth: 20
+          }
+        },
+        // 軸
         scales: {
           xAxes: [
             {
@@ -84,7 +92,7 @@ export default {
     // chartの開始日, デフォルトは今週の日曜日
     beginDay: {
       type: Date,
-      default: startOfWeek(new Date())
+      default: () => startOfWeek(new Date())
     },
     // chartの表示期間(1週間単位)
     weekCount: {
@@ -147,8 +155,8 @@ export default {
         );
 
         // beginDay, endDayの範囲内であれば, データセットに追加
-        const endDay = add(this.beginDay, { days: 7 * this.weekCount - 1 });
-        if (isAfter(parsedDate, this.beginDay)) {
+        const endDay = add(this.beginDay, { days: 7 * this.weekCount });
+        if (isAfter(parsedDate, add(this.beginDay, { days: -1 }))) {
           if (isBefore(parsedDate, endDay)) {
             kabuValuesInChart.push(kabuValue);
           }
@@ -216,6 +224,7 @@ export default {
         const _data = {
           label: _userLabel,
           borderColor: getUserColor(user_id),
+          backgroundColor: "rgba(0, 0, 0, 0)",
           spanGaps: true,
           lineTension: 0,
           data: __d
