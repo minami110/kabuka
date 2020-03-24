@@ -25,4 +25,4 @@ deploy:
   target-branch: master
   local-dir: src/dist
   on:
-    branch: master
+    branch: pre_deploy
