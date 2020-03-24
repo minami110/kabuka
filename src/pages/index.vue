@@ -56,6 +56,7 @@ import CardChart from "~/components/CardChart";
 
 // import package info
 import package_info from "~/package.json";
+import build_info from "~/build_info.json";
 
 export default {
   components: {
@@ -75,7 +76,7 @@ export default {
       loginuser: "users/loginuser"
     }),
     application_version() {
-      return package_info.version;
+      return package_info.version + "." + build_info.number;
     }
   },
 
