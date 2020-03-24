@@ -1,4 +1,3 @@
-
 export default {
   mode: 'universal',
   /*
@@ -29,6 +28,7 @@ export default {
   ** Global CSS
   */
   css: [
+    '~/assets/css/kabuka.scss'
   ],
   /*
   ** Plugins to load before mounting the App
@@ -55,13 +55,6 @@ export default {
     ** You can extend webpack config here
     */
     extend(config, ctx) {
-      config.node = {
-        fs: 'empty',
-        googleapis: 'empty',
-        child_process: 'empty',
-        net: 'empty',
-        tls: 'empty'
-      }
     }
   }
 }

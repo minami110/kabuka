@@ -1,72 +1,103 @@
 <template>
-  <div class="container">
-    <div>
-      <logo />
-      <h1 class="title">
-        kabuka
-      </h1>
-      <h2 class="subtitle">
-        
-      </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
-      </div>
-    </div>
-  </div>
+  <b-container class="mt-3">
+    <h1>kabuka</h1>
+
+    <b-row v-if="bFetchingData">
+      <b-col cols="12" class="text-center">
+        <strong>スプレッドシートにアクセス中...</strong>
+        <b-spinner small label="Spinning"></b-spinner>
+      </b-col>
+    </b-row>
+
+    <b-row v-else>
+      <!-- ログイン状態に応じて, 表示するカードを変更 -->
+      <b-col cols="12">
+        <!-- loginuser.id がなければ, ログインカードを表示 -->
+        <card-login v-if="!loginuser.id" />
+
+        <!-- loginuser.id があれば, ユーザーカードを表示 -->
+        <card-user v-else @logout="makeToast('logout!', 'Succeed to logout', 'success')" />
+      </b-col>
+
+      <b-col v-if="loginuser.id" cols="12" class="mt-3">
+        <card-chart />
+      </b-col>
+
+      <b-col v-if="loginuser.id" cols="12" class="mt-3">
+        <card-links />
+      </b-col>
+    </b-row>
+
+    <!-- footer -->
+    <b-row class="mt-3">
+      <b-col cols="12" class="text-center text-muted small">
+        <span>version: 0.2.0.4</span>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
+import { mapGetters } from "vuex";
+
+// import components
+import CardLogin from "~/components/CardLogin";
+import CardUser from "~/components/CardUser";
+import CardLinks from "~/components/CardLinks";
+import CardChart from "~/components/CardChart";
 
 export default {
   components: {
-    Logo
+    CardLogin,
+    CardUser,
+    CardLinks,
+    CardChart
+  },
+  data() {
+    return {
+      bFetchingData: true
+    };
+  },
+  computed: {
+    ...mapGetters({
+      users: "users/users",
+      loginuser: "users/loginuser"
+    })
+  },
+
+  async mounted() {
+    // fetch users data from spleadsheet
+    this.bFetchingData = true;
+    await Promise.all([this.$store.dispatch("users/getUsers")]);
+    this.bFetchingData = false;
+
+    // get user-id from query
+    const queryLoginuserId = this.$route.query.user;
+    if (queryLoginuserId) {
+      // クエリのuser-idがある場合は, それを利用してログインする
+      await this.$store.dispatch({
+        type: "users/loginUseId",
+        id: queryLoginuserId
+      });
+
+      // クエリのuser-idを使用してログイン後に, ログインに成功していなければ, クエリを空にする
+      if (!this.loginuser.id) {
+        let query = { ...this.$route.query };
+        delete query["user"];
+        // pushではなくreplaceを使用して, historyを残さない
+        this.$router.replace({ query: query });
+      }
+    }
+  },
+  methods: {
+    makeToast(title = "title", body = "body", variant = null) {
+      this.$bvToast.toast(body, {
+        title: title,
+        variant: variant,
+        autoHideDelay: 3000
+      });
+    }
   }
-}
+};
 </script>
 
-<style>
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.title {
-  font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
-}
-</style>

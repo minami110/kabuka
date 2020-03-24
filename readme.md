@@ -24,9 +24,6 @@
 * `git push`
 * merge to master
 
-### Google accounts
-* https://docs.google.com/spreadsheets/d/1MA-ufB6FPBc9kdq4H6ZoM0TX0mTeRFwlWNWuBxrYERk/edit#gid=0
-* kabuka.acnh
-* Doubutsu_0320
-*
-*
+### Spleadsheet endpoint
+* GASを使用
+* https://script.google.com/d/1pxkDl1PLTqzwASYQKoG9AuJGierartQ84xZB-E9xf1hcWU_GJjNi03qZ/edit
