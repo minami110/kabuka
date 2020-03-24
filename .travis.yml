@@ -11,9 +11,11 @@ branches:
   - master
 
 install:
-  - npm install
   - cd src
+  - npm install
   - npm run generate
+  - cd ..
+  - mv ./src/dist ./docs
 
 script:
   - echo "Skipping tests"
@@ -23,6 +25,6 @@ deploy:
   skip-cleanup: true
   github-token: $GITHUB_ACCESS_TOKEN
   target-branch: master
-  local-dir: src/dist
+  local-dir: docs
   on:
     branch: master
