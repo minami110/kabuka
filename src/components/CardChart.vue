@@ -7,9 +7,9 @@
           <b-badge class="small">beta</b-badge>
         </span>
         <span>:</span>
-        <span>{{ monday }}</span>
+        <span>{{ beginDayStr }}</span>
         <span>~</span>
-        <span>{{ saturday }}</span>
+        <span>{{ endDayStr }}</span>
         <span class="small text-muted">(Week: 1)</span>
       </h5>
     </b-card-title>
@@ -35,8 +35,9 @@ import format from "date-fns/format";
 import startOfWeek from "date-fns/startOfWeek";
 import add from "date-fns/add";
 import parse from "date-fns/parse";
-import isSameWeek from "date-fns/isSameWeek";
 import getDay from "date-fns/getDay";
+import isAfter from "date-fns/isAfter";
+import isBefore from "date-fns/isBefore";
 
 // import components
 import LineChart from "~/components/LineChart";
@@ -46,12 +47,50 @@ export default {
     return {
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                // AM , PM を除外して, 日付のみ表示する
+                userCallback: function(label, index, labels) {
+                  if (index % 2 == 0) {
+                    return label.split(" ")[0];
+                  }
+                }
+              }
+            }
+          ],
+          yAxes: [
+            {
+              ticks: {
+                // メモリに小数点を絶対に表示させない
+                userCallback: function(label, index, labels) {
+                  if (Math.floor(label) === label) {
+                    return label;
+                  }
+                }
+              }
+            }
+          ]
+        }
       },
       state: {
         bMounted: false
       }
     };
+  },
+  props: {
+    // chartの開始日, デフォルトは今週の日曜日
+    beginDay: {
+      type: Date,
+      default: startOfWeek(new Date())
+    },
+    // chartの表示期間(1週間単位)
+    weekCount: {
+      type: Number,
+      default: 1
+    }
   },
   components: {
     LineChart
@@ -62,25 +101,21 @@ export default {
       kabuValues: "kabuValues/kabuValues",
       store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
     }),
-    monday() {
-      const sunday = startOfWeek(new Date());
-      const day = add(sunday, { days: 1 });
-      return format(day, "M/d");
+    beginDayStr() {
+      return format(this.beginDay, "M/d");
     },
-    saturday() {
-      const sunday = startOfWeek(new Date());
-      const day = add(sunday, { days: 6 });
+    endDayStr() {
+      const day = add(this.beginDay, { days: 7 * this.weekCount - 1 });
       return format(day, "M/d");
     },
     isFetchingKabuValues() {
       if (!this.state.bMounted) {
         return true;
-      }
-      if (this.store_bFetchingKabuValues) {
+      } else if (this.store_bFetchingKabuValues) {
         return true;
+      } else {
+        return false;
       }
-
-      return false;
     },
     chartdata() {
       const result = {};
@@ -90,34 +125,11 @@ export default {
         return result;
       }
 
-      // chartの開始の日曜日を設定
-      const sunday = startOfWeek(new Date());
+      // 期間内の, ラベルのリストを取得
+      result.labels = this.getChartLabelList();
+      const _labelTotalCount = 7 * this.weekCount * 2; // あとでつかう
 
-      const deltaOneDay = { days: 1 };
-      const monday = add(sunday, deltaOneDay);
-      const tuesday = add(monday, deltaOneDay);
-      const wednesday = add(tuesday, deltaOneDay);
-      const thursday = add(wednesday, deltaOneDay);
-      const friday = add(thursday, deltaOneDay);
-      const saturday = add(friday, deltaOneDay);
-
-      // 月曜から 土曜まで AM, PMごとにラベルを作成
-      result.labels = [
-        format(monday, "M/dd"),
-        "",
-        format(tuesday, "M/dd"),
-        "",
-        format(wednesday, "M/dd"),
-        "",
-        format(thursday, "M/dd"),
-        "",
-        format(friday, "M/dd"),
-        "",
-        format(saturday, "M/dd"),
-        ""
-      ];
-
-      // 上記の範囲内のデータセットを抽出
+      // 上記の範囲内のデータセットを抽出する
       const kabuValuesInChart = [];
 
       for (const kabuValueId in this.kabuValues) {
@@ -134,10 +146,12 @@ export default {
           new Date()
         );
 
-        // 開始の日曜日と同じ週であれば, データセットに追加
-        isSameWeek(parsedDate, sunday);
-        {
-          kabuValuesInChart.push(kabuValue);
+        // beginDay, endDayの範囲内であれば, データセットに追加
+        const endDay = add(this.beginDay, { days: 7 * this.weekCount - 1 });
+        if (isAfter(parsedDate, this.beginDay)) {
+          if (isBefore(parsedDate, endDay)) {
+            kabuValuesInChart.push(kabuValue);
+          }
         }
       }
 
@@ -187,7 +201,8 @@ export default {
 
         // ラベルの数だけデータを作成する
         const __d = [];
-        for (var i = 0; i < 12; i++) {
+        for (var i = 0; i < _labelTotalCount; i++) {
+          // もしvalueが存在しなければ, nullを代入する
           const value = kabuValueEachUsers[user_id][i];
           if (value) {
             __d.push(value);
@@ -195,8 +210,11 @@ export default {
             __d.push(null);
           }
         }
+
+        // 最終のデータを作成する
+        const _userLabel = user.name + "@" + user["Island Name"];
         const _data = {
-          label: user.name,
+          label: _userLabel,
           borderColor: getUserColor(user_id),
           spanGaps: true,
           lineTension: 0,
@@ -218,6 +236,26 @@ export default {
       });
       */
 
+      return result;
+    }
+  },
+  methods: {
+    getChartLabelList() {
+      // propsから, ラベルを作成
+      // AM / PMごとにラベルを作成する
+      const result = [];
+      const _labelTotalCount = 7 * this.weekCount * 2;
+      for (var i = 0; i < _labelTotalCount; i++) {
+        const _dayDelta = i / 2;
+        const _d = add(this.beginDay, { days: _dayDelta });
+        let _ds = format(_d, "M/d");
+        if (i % 2) {
+          _ds += " PM";
+        } else {
+          _ds += " AM";
+        }
+        result.push(_ds);
+      }
       return result;
     }
   },
