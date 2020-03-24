@@ -12,6 +12,7 @@ branches:
 
 install:
   - npm install
+  - cd src
   - npm run generate
 
 script:
@@ -22,6 +23,6 @@ deploy:
   skip-cleanup: true
   github-token: $GITHUB_ACCESS_TOKEN
   target-branch: master
-  local-dir: docs
+  local-dir: src/dist
   on:
     branch: master
