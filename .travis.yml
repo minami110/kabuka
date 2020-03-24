@@ -16,7 +16,7 @@ branches:
 install:
   - cd src
   # write current build number
-  - cat ./build_info.json | sed "s/BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" > ./build_info.json
+  - sed -i -e "s/BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" ./build_info.json
   - npm install
   - npm run generate
 
