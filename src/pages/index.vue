@@ -38,8 +38,9 @@
 </template>
 
 <style>
-input[type="text"] {
-  font-size: 16px;
+input,
+select {
+  font-size: 16px !important;
 }
 </style>
 
