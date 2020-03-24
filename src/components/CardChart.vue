@@ -171,6 +171,8 @@ export default {
           return "#345678";
         } else if (userid == 6) {
           return "#993333";
+        } else if (userid == 7) {
+          return "#DAA520";
         } else if (userid == 10) {
           return "#076245";
         } else {
@@ -205,6 +207,7 @@ export default {
       }
 
       // ユーザーが購入した価格のデータを入力
+      /*
       result.datasets.push({
         label: "購入価格",
         borderColor: "#366",
@@ -213,6 +216,7 @@ export default {
         lineTension: 0,
         data: [200, , , , , , , , , , , 200]
       });
+      */
 
       return result;
     }
