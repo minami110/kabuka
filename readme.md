@@ -15,7 +15,8 @@
 
 ### deploy to github pages
 * push or merge into `origin/pre_deploy` branch
-* run TravisCI
+* ci: TravisCI
+* coverage: Coverall
 
 ### Spleadsheet endpoint
 * using Google Script API endpoint

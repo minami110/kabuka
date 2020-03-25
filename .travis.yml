@@ -14,15 +14,20 @@ branches:
   - pre_deploy
 
 before_install:
+  # update npm
   - npm update
-install:
+  # move to /src
   - cd src
+install:
+  # install modules (using cache)
   - npm install
-script:
-  - npm run test --coverage && cat ./coverage/lcov.info | coveralls
+before_script:
   # write current build number
   - sed -i -e "s/BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" ./build_info.json
-  # build
+script:
+  # start jest test
+  - npm run test --coverage && cat ./coverage/lcov.info | coveralls
+  # start build
   - npm run generate
 
 deploy:

@@ -18,13 +18,12 @@ test('WeeklyData construct', () => {
 
     // already return number
     w = new WeeklyData(["20"])
-    expect(w.saturday.pm).toBe(20);
+    expect(w.saturday.pm).toBe(28);
 
 });
 
 test('WeeklyData::magnitude', () => {
     let w = new WeeklyData([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
-
 
 });
 
