@@ -454,7 +454,6 @@ export class Detector {
 
     // とびだせどうぶつの森の, C-2パターン検証再帰モデル
     static check_poor(week, result, currentDayIndex, limitDayIndex) {
-
         // 現在の日付を超えたらアウト
         if (currentDayIndex > limitDayIndex) {
             return "A"
@@ -510,7 +509,7 @@ export class Detector {
 
         }
 
-        return this.check_poor(currentDayIndex + 1, limitDayIndex)
+        return Detector.check_poor(week, result, currentDayIndex + 1, limitDayIndex)
     }
 
     static check_poor_final(result, mag, current, limidDay) {

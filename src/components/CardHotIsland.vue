@@ -29,21 +29,9 @@
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
       <b-card class="mt-3">
-        <h5>up next</h5>
-        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
+        <h5>予測</h5>
+        <b-table striped hover dark small :items="items_next" :fields="fields_next"></b-table>
       </b-card>
-
-      <b-card class>
-        <h5>未確定</h5>
-        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
-      </b-card>
-
-      <b-card class>
-        <h5>ended</h5>
-        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
-      </b-card>
-
-      <!-- 型が未確定の島のリスト -->
     </div>
   </b-card>
 </template>
@@ -60,29 +48,20 @@ import parse from "date-fns/parse";
 import getDay from "date-fns/getDay";
 import isAfter from "date-fns/isAfter";
 import isBefore from "date-fns/isBefore";
+import getHours from "date-fns/getHours";
+
+//
+import { Detector } from "~/plugins/kabu_detector";
 
 export default {
   data() {
     return {
-      state: {
-        bMounted: false
-      },
+      state: {},
 
-      fields: [
+      fields_next: [
         {
           key: "peek",
           label: "ピークの時間",
-          sortable: true
-        },
-
-        {
-          key: "expected_min",
-          label: "予測最低価格",
-          sortable: true
-        },
-        {
-          key: "expected_max",
-          label: "予測最高価格",
           sortable: true
         },
         {
@@ -93,14 +72,15 @@ export default {
         {
           key: "type",
           sortable: false
+        },
+        {
+          key: "ambiguous_weight",
+          label: "正確さ",
+          sortable: true
         }
       ],
 
-      items: [
-        { peek: "3/2 AM", type: "4期型", expected_min: 100, userId: "1" },
-        { peek: "3/14 PM", type: "3期型", expected_min: 120, userId: "2" },
-        { peek: "3/17 PM", type: "3期型", expected_min: 300, userId: "2" }
-      ]
+      preds: {}
     };
   },
   props: {
@@ -130,24 +110,43 @@ export default {
       return format(day, "M/d");
     },
     isFetchingKabuValues() {
-      if (!this.state.bMounted) {
-        return true;
-      } else if (this.store_bFetchingKabuValues) {
+      if (this.store_bFetchingKabuValues) {
         return true;
       } else {
         return false;
       }
     },
-    chartdata() {
-      const result = {};
 
+    // next up に乗せるデータたち
+    items_next() {
+      // 今のTimeインデックスを取得
+      const dayid = getDay(new Date()); // 日曜なら0
+      const hour = getHours(new Date());
+      const isPm = hour > 11 ? 1 : 0;
+      const timeIndex = dayid * 2 + isPm;
+
+      const result = [];
+      for (const userId in this.preds) {
+        const pred = this.preds[userId];
+        result.push({
+          peek: pred.peek < 2 ? "未確定" : pred.peek - timeIndex + "後",
+          type: pred.movingTypes,
+          userId: this.users[userId].name,
+          ambiguous_weight: 20 - pred.ambiguous_weight
+        });
+      }
+      return result;
+    }
+  },
+  methods: {
+    // vuexのKabuValuesが更新されたら呼ばれるイベント
+    updateChartData() {
       // userのデータが読み取れなかったら, return
       if (Object.keys(this.users).length < 1) {
-        return result;
+        return;
       }
 
       // 期間内の, ラベルのリストを取得
-      result.labels = this.getChartLabelList();
       const _labelTotalCount = 7 * this.weekCount * 2; // あとでつかう
 
       // 上記の範囲内のデータセットを抽出する
@@ -201,7 +200,7 @@ export default {
       }
 
       // ユーザーごとにデータセットを作成
-      result.datasets = [];
+      const _preds = {};
       for (const user_id in kabuValueEachUsers) {
         const user = this.users[user_id];
 
@@ -217,44 +216,32 @@ export default {
           }
         }
 
-        // 最終のデータを作成する
-        const _userLabel = user.name + "@" + user["Island Name"];
-        const _data = {
-          label: _userLabel,
-          borderColor: user.color,
-          backgroundColor: "rgba(0, 0, 0, 0)",
-          spanGaps: true,
-          lineTension: 0,
-          data: __d
-        };
+        // 今のTimeインデックスを取得
+        const dayid = getDay(new Date()); // 日曜なら0
+        const hour = getHours(new Date());
+        const isPm = hour > 11 ? 1 : 0;
+        const timeIndex = dayid * 2 + isPm;
 
-        result.datasets.push(_data);
+        // このデータをもとに, 予測を行う
+        const pred = Detector.detect_v_tobimori(__d, timeIndex);
+        _preds[user_id] = pred;
       }
 
-      // ユーザーが購入した価格のデータを入力
-      /*
-      result.datasets.push({
-        label: "購入価格",
-        borderColor: "#366",
-        backgroundColor: "rgba(0 ,0,0,0)",
-        spanGaps: true,
-        lineTension: 0,
-        data: [200, , , , , , , , , , , 200]
-      });
-      */
-
-      return result;
+      this.preds = _preds;
     }
   },
-  methods: {
-    // vuexのKabuValuesが更新されたら呼ばれるイベント
-    onUpdateChartData() {},
-
-    async mounted() {
-      await this.$store.dispatch("kabuValues/getKabuValues");
-      this.state.bMounted = true;
-    }
+  async mounted() {
+    this.$store.dispatch("kabuValues/getKabuValues");
   },
-  watch: {}
+  watch: {
+    store_bFetchingKabuValues: function(val) {
+      if (!val) {
+        if (!this.state.bSubmitting) {
+          // update form.value
+          this.updateChartData();
+        }
+      }
+    }
+  }
 };
 </script>
