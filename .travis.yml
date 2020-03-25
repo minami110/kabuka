@@ -26,7 +26,7 @@ before_script:
   - sed -i -e "s/BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" ./build_info.json
 script:
   # start jest test
-  - npm run test --coverage && cat ./coverage/lcov.info | coveralls
+  - npm run test --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
   # start build
   - npm run generate
 
