@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.com/minami110/kabuka.svg?branch=pre_deploy)](https://travis-ci.com/minami110/kabuka)
+[![Coverage Status](https://coveralls.io/repos/github/minami110/kabuka/badge.svg?branch=pre_deploy)](https://coveralls.io/github/minami110/kabuka?branch=dev)
+
+
 # kabuka
 * https://minami110.github.io/kabuka/
 

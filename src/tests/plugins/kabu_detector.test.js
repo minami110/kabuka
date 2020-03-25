@@ -18,7 +18,7 @@ test('WeeklyData construct', () => {
 
     // already return number
     w = new WeeklyData(["20"])
-    expect(w.saturday.pm).toBe(28);
+    expect(w.saturday.pm).toBe(20);
 
 });
 
