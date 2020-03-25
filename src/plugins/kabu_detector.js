@@ -4,7 +4,7 @@
 export class WeeklyData {
 
     constructor(datas) {
-        const _datas = this.valid(datas)
+        const _datas = this._valid(datas)
         this.sunday = {
             am: _datas[0],
             pm: _datas[1]
@@ -36,10 +36,10 @@ export class WeeklyData {
     }
 
     _valid(datas) {
-        let result = list()
+        const result = []
         for (let i = 0; i < 14; i++) {
             try {
-                result.push(datas[i])
+                result.push(Number(datas[i]))
             }
             catch (e) {
                 result.push(null)
@@ -54,7 +54,7 @@ export class WeeklyData {
     // [null, 2, null] -> [null, 2, 2]
     // [null, null] -> [null, null]
     _fill_blank_data(datas) {
-        result = list()
+        const result = []
         let prev_data = null
         for (const data of datas) {
             if (data) {
@@ -100,15 +100,6 @@ export class Prediction {
 
 // カブの値動きを判定するクラス
 export class Detector {
-
-    // 値動き型の列挙体
-    MovingType = {
-        Wave: 1,
-        Poor: 2,
-        Period3: 3,
-        Period4: 4
-    }
-
 
 
     // カブの値動き型の確率を判定する関数
