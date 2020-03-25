@@ -20,6 +20,10 @@
       </b-col>
 
       <b-col v-if="loginuser.id" cols="12" class="mt-3">
+        <card-hot-island />
+      </b-col>
+
+      <b-col v-if="loginuser.id" cols="12" class="mt-3">
         <card-chart />
       </b-col>
 
@@ -53,6 +57,7 @@ import CardLogin from "~/components/CardLogin";
 import CardUser from "~/components/CardUser";
 import CardLinks from "~/components/CardLinks";
 import CardChart from "~/components/CardChart";
+import CardHotIsland from "~/components/CardHotIsland";
 
 // import package info
 import package_info from "~/package.json";
@@ -63,7 +68,8 @@ export default {
     CardLogin,
     CardUser,
     CardLinks,
-    CardChart
+    CardChart,
+    CardHotIsland
   },
   data() {
     return {

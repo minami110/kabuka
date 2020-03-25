@@ -4,7 +4,7 @@ node_js:
 
 cache:
   directories:
-    - "node_modules"
+    - "src/node_modules"
 
 git:
   depth: 3
@@ -13,15 +13,22 @@ branches:
   only:
   - pre_deploy
 
-install:
+before_install:
+  # update npm
+  - npm update
+  # move to /src
   - cd src
+install:
+  # install modules (using cache)
+  - npm install
+before_script:
   # write current build number
   - sed -i -e "s/BUILD_NUMBER/$TRAVIS_BUILD_NUMBER/" ./build_info.json
-  - npm install
-  - npm run generate
-
 script:
-  - echo "Skipping tests"
+  # start jest test
+  - npm run test --coverage && cat ./coverage/lcov.info | coveralls
+  # start build
+  - npm run generate
 
 deploy:
   provider: pages
