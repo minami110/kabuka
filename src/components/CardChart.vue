@@ -187,21 +187,6 @@ export default {
         kabuValueEachUsers[userid][index] = kabuValue.value;
       }
 
-      // ユーザーのユーザーの色を取得する関数
-      function getUserColor(userid) {
-        if (userid == 2) {
-          return "#345678";
-        } else if (userid == 6) {
-          return "#993333";
-        } else if (userid == 7) {
-          return "#DAA520";
-        } else if (userid == 10) {
-          return "#076245";
-        } else {
-          return "#ccc";
-        }
-      }
-
       // ユーザーごとにデータセットを作成
       result.datasets = [];
       for (const user_id in kabuValueEachUsers) {
@@ -223,7 +208,7 @@ export default {
         const _userLabel = user.name + "@" + user["Island Name"];
         const _data = {
           label: _userLabel,
-          borderColor: getUserColor(user_id),
+          borderColor: user.color,
           backgroundColor: "rgba(0, 0, 0, 0)",
           spanGaps: true,
           lineTension: 0,

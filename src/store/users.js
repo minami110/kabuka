@@ -22,6 +22,28 @@ export const mutations = {
         for (const index in users) {
             const user = users[index]
             if (user.name) {
+                switch (user.id) {
+                    case "1":
+                        user.color = "#B8860B"
+                        break;
+                    case "2":
+                        user.color = "#CC6666"
+                        break;
+                    case "3":
+                        user.color = "#5F9EA0"
+                        break;
+                    case "7":
+                        user.color = "#996699"
+                        break;
+                    case "10":
+                        user.color = "#006633"
+                        break
+                    default:
+                        let rand = Math.floor((Math.abs(Math.sin(user.id) * 16777215)) % 16777215)
+                        rand = (rand + 16777215) / 2
+                        user.color = "#" + rand.toString(16);
+                }
+
                 state.users = { ...state.users, [user.id]: user }
             }
         }
