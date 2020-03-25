@@ -3,7 +3,7 @@
     <b-card-title>
       <h5>
         <span>
-          🥬🥬 Kabu Chart 🥬🥬
+          🔥🔥 Hot Island 🔥🔥
           <b-badge class="small">beta</b-badge>
         </span>
         <span>:</span>
@@ -21,7 +21,29 @@
       </b-col>
     </div>
     <div v-else>
-      <line-chart :chartdata="chartdata" :options="options" style="height:400px" />
+      <div class="text-muted small">
+        <li>とびだせどうぶつの森のカブチャートを使用</li>
+        <li>あくまで予測なので, 参考程度に</li>
+      </div>
+      <!-- 型が確定している島のリスト -->
+      <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
+
+      <b-card class="mt-3">
+        <h5>up next</h5>
+        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
+      </b-card>
+
+      <b-card class>
+        <h5>未確定</h5>
+        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
+      </b-card>
+
+      <b-card class>
+        <h5>ended</h5>
+        <b-table striped hover dark small :items="items" :fields="fields"></b-table>
+      </b-card>
+
+      <!-- 型が未確定の島のリスト -->
     </div>
   </b-card>
 </template>
@@ -39,53 +61,46 @@ import getDay from "date-fns/getDay";
 import isAfter from "date-fns/isAfter";
 import isBefore from "date-fns/isBefore";
 
-// import components
-import LineChart from "~/components/LineChart";
-
 export default {
   data() {
     return {
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        // 凡例
-        legend: {
-          position: "bottom",
-          labels: {
-            boxWidth: 20
-          }
-        },
-        // 軸
-        scales: {
-          xAxes: [
-            {
-              ticks: {
-                // AM , PM を除外して, 日付のみ表示する
-                userCallback: function(label, index, labels) {
-                  if (index % 2 == 0) {
-                    return label.split(" ")[0];
-                  }
-                }
-              }
-            }
-          ],
-          yAxes: [
-            {
-              ticks: {
-                // メモリに小数点を絶対に表示させない
-                userCallback: function(label, index, labels) {
-                  if (Math.floor(label) === label) {
-                    return label;
-                  }
-                }
-              }
-            }
-          ]
-        }
-      },
       state: {
         bMounted: false
-      }
+      },
+
+      fields: [
+        {
+          key: "peek",
+          label: "ピークの時間",
+          sortable: true
+        },
+
+        {
+          key: "expected_min",
+          label: "予測最低価格",
+          sortable: true
+        },
+        {
+          key: "expected_max",
+          label: "予測最高価格",
+          sortable: true
+        },
+        {
+          key: "userId",
+          label: "ユーザー",
+          sortable: false
+        },
+        {
+          key: "type",
+          sortable: false
+        }
+      ],
+
+      items: [
+        { peek: "3/2 AM", type: "4期型", expected_min: 100, userId: "1" },
+        { peek: "3/14 PM", type: "3期型", expected_min: 120, userId: "2" },
+        { peek: "3/17 PM", type: "3期型", expected_min: 300, userId: "2" }
+      ]
     };
   },
   props: {
@@ -100,9 +115,7 @@ export default {
       default: 1
     }
   },
-  components: {
-    LineChart
-  },
+  components: {},
   computed: {
     ...mapGetters({
       users: "users/users",
@@ -234,28 +247,14 @@ export default {
     }
   },
   methods: {
-    getChartLabelList() {
-      // propsから, ラベルを作成
-      // AM / PMごとにラベルを作成する
-      const result = [];
-      const _labelTotalCount = 7 * this.weekCount * 2;
-      for (var i = 0; i < _labelTotalCount; i++) {
-        const _dayDelta = i / 2;
-        const _d = add(this.beginDay, { days: _dayDelta });
-        let _ds = format(_d, "M/d");
-        if (i % 2) {
-          _ds += " PM";
-        } else {
-          _ds += " AM";
-        }
-        result.push(_ds);
-      }
-      return result;
+    // vuexのKabuValuesが更新されたら呼ばれるイベント
+    onUpdateChartData() {},
+
+    async mounted() {
+      await this.$store.dispatch("kabuValues/getKabuValues");
+      this.state.bMounted = true;
     }
   },
-  async mounted() {
-    await this.$store.dispatch("kabuValues/getKabuValues");
-    this.state.bMounted = true;
-  }
+  watch: {}
 };
 </script>
