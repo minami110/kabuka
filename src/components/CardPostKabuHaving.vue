@@ -15,9 +15,15 @@
               <b-form-input
                 type="number"
                 size="sm"
+                placeholder="???"
                 v-model="form.valueUriSell"
                 :readonly="getIsFormDisabled"
-              ></b-form-input>
+                @change="onChangedValueUriSell"
+                lazy
+                required
+                min="1"
+                max="999"
+              />
             </b-input-group>
             <template #label>
               <h6>🐗の販売値</h6>
@@ -55,7 +61,7 @@
       </b-form-group>
       -->
 
-      <template v-slot:footer>
+      <template v-slot:footer v-if="state.bChangedValueByUser">
         <b-button block type="submit" size="sm" variant="primary" :disabled="getIsFormDisabled">
           <span>{{getSubmitButtonText}}</span>
           <b-spinner v-show="getShowSubmitButtonSpinner" small />
@@ -78,11 +84,12 @@ export default {
   data() {
     return {
       form: {
-        valueUriSell: 100
+        valueUriSell: null
       },
       state: {
         bMounted: false,
-        bSubmitting: false
+        bSubmitting: false,
+        bChangedValueByUser: false
       }
     };
   },
@@ -121,6 +128,7 @@ export default {
       }
       return false;
     },
+    // is show spinner in submit button
     getShowSubmitButtonSpinner() {
       if (this.state.bSubmitting) {
         return true;
@@ -129,6 +137,7 @@ export default {
       }
       return false;
     },
+    // get loginuser island name
     getLoginUserIslandName() {
       if (this.loginuser.islandName) {
         return this.loginuser.islandName + "島";
@@ -138,9 +147,11 @@ export default {
     }
   },
   methods: {
+    // user clicked submit button
     async submit(e) {
       e.preventDefault();
 
+      // 現在送信処理中なら, return
       if (this.state.bSubmitting) {
         return;
       } else {
@@ -177,7 +188,9 @@ export default {
         autoHideDelay: 2000
       });
 
+      // 投稿後に, stateを初期に戻す
       this.state.bSubmitting = false;
+      this.state.bChangedValueByUser = false;
     },
     // データベース更新後に, フォームを更新する関数
     // mountedの最後に呼ばれる
@@ -195,9 +208,13 @@ export default {
         // set to prev value
         this.form.valueUriSell = this.kabuValues[id].value;
       } else {
-        // set to default: 100
-        this.form.valueUriSell = 100;
+        // set to default: null
+        this.form.valueUriSell = null;
       }
+    },
+    // ユーザー入力により, カブ値が変更されたときのコールバック
+    onChangedValueUriSell() {
+      this.state.bChangedValueByUser = true;
     }
   },
   mounted() {

@@ -20,11 +20,16 @@
           <b-form-group>
             <b-input-group prepend="💰" append="ベル" size="sm" class="mr-2">
               <b-input
-                size="sm"
-                placeholder="100"
-                v-model="form.value"
                 type="number"
+                size="sm"
+                placeholder="???"
+                v-model="form.value"
                 :readonly="readOnlyValueInput"
+                @change="onChangedValue"
+                lazy
+                required
+                min="1"
+                max="999"
               />
             </b-input-group>
             <template #label>
@@ -62,7 +67,7 @@
         </b-col>
       </b-form-row>
 
-      <template v-slot:footer>
+      <template v-slot:footer v-if="state.bChangedValueByUser">
         <b-button
           block
           type="submit"
@@ -95,7 +100,7 @@ export default {
   data() {
     return {
       form: {
-        value: 100,
+        value: null,
         date: new Date(),
         isPm: null
       },
@@ -104,7 +109,8 @@ export default {
         bSubmitting: true,
         bShowDateForm: false,
         bMounted: false,
-        bAlreadyPosted: false
+        bAlreadyPosted: false,
+        bChangedValueByUser: false
       },
       calender: {
         minDate: null,
@@ -223,15 +229,19 @@ export default {
         "-" +
         String(this.loginuser.id);
 
+      // 株価を入力済みの値に変更
       if (this.kabuValues[id]) {
         // set to prev value
         this.form.value = this.kabuValues[id].value;
         this.state.bAlreadyPosted = true;
       } else {
-        // set to default: 100
-        this.form.value = 100;
+        // set to default: null
+        this.form.value = null;
         this.state.bAlreadyPosted = false;
       }
+
+      // ユーザー入力による変更済みフラグをリセットする
+      this.state.bChangedValueByUser = false;
     },
     openDateForm(e) {
       e.preventDefault();
@@ -300,7 +310,13 @@ export default {
         autoHideDelay: 2000
       });
 
+      // 投稿後に, stateを初期に戻す
       this.state.bSubmitting = false;
+      this.state.bChangedValueByUser = false;
+    },
+    // ユーザー入力により, カブ値が変更されたときのコールバック
+    onChangedValue() {
+      this.state.bChangedValueByUser = true;
     }
   },
   watch: {
