@@ -370,7 +370,7 @@ export class Detector {
             result.setPeeks([7, 10])
 
             // 外部の関数で, peekの判定を行う
-            if (Detector.checkPeek(week, result, 2, currentTimeIndex)) {
+            if (Detector.checkPeek(week, result, 3, currentTimeIndex)) {
                 // 変調をかくにん
                 return "A"
             }
