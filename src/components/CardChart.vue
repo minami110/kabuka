@@ -2,10 +2,7 @@
   <b-card>
     <b-card-title>
       <h5>
-        <span>
-          🥬🥬 Kabu Chart 🥬🥬
-          <b-badge class="small">beta</b-badge>
-        </span>
+        <span>🥬🥬 Kabu Chart 🥬🥬</span>
         <span>:</span>
         <span>{{ beginDayStr }}</span>
         <span>~</span>
@@ -242,7 +239,7 @@ export default {
       for (var i = 0; i < _labelTotalCount; i++) {
         const _dayDelta = i / 2;
         const _d = add(this.beginDay, { days: _dayDelta });
-        let _ds = format(_d, "M/d");
+        let _ds = format(_d, "M/d(E)");
         if (i % 2) {
           _ds += " PM";
         } else {

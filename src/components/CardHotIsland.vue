@@ -2,10 +2,7 @@
   <b-card>
     <b-card-title>
       <h5>
-        <span>
-          🔥🔥 Hot Island 🔥🔥
-          <b-badge class="small">beta</b-badge>
-        </span>
+        <span>🔥🔥 Hot Island 🔥🔥</span>
         <span>:</span>
         <span>{{ beginDayStr }}</span>
         <span>~</span>
@@ -21,18 +18,114 @@
       </b-col>
     </div>
     <div v-else>
-      <div class="text-muted small">
-        <li>とびだせどうぶつの森のカブチャートを使用</li>
-        <li>あくまで予測なので, 参考程度に</li>
-      </div>
       <!-- 型が確定している島のリスト -->
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
-      <h5 class="mt-3">次にピークが来るしま</h5>
-      <b-table striped hover dark small :items="items_next" :fields="fields_next"></b-table>
+      <b-nav class="mt-3" small pills>
+        <b-nav-item :active="state.tableIndex == 0" @click="state.tableIndex = 0">🔥 アツいしま</b-nav-item>
+        <b-nav-item :active="state.tableIndex == 1" @click="state.tableIndex = 1">👀 全データ</b-nav-item>
+        <b-nav-item :active="state.tableIndex == 2" @click="state.tableIndex = 2">📖 用語集</b-nav-item>
+      </b-nav>
 
-      <h5 class="mt-3">全データ</h5>
-      <b-table striped hover dark small :items="items_all" :fields="fields_next"></b-table>
+      <div v-show="state.tableIndex==0">
+        <div v-if="items_next.length">
+          <b-table striped hover dark small :items="items_next" :fields="fields_next"></b-table>
+        </div>
+        <div v-else class="p-3 text-muted small text-center">😢😢 現在アツいしまはないようです... 😢😢</div>
+      </div>
+
+      <div v-show="state.tableIndex==1">
+        <b-table striped hover dark small :items="items_all" :fields="fields_next"></b-table>
+      </div>
+
+      <div v-show="state.tableIndex==2" class="text-muted small p-3">
+        <h5 class="mt-1">ピーク</h5>
+        <li>一週間のうちで, カブが最高値をつける瞬間</li>
+        <li>ピークをすぎると下降しかしないため, ピークに売るのが吉</li>
+        <li>ピークが存在するのは, 三期型と四期型のみ</li>
+
+        <h5 class="mt-3">カブの値動き</h5>
+        <li>
+          つぶきち, まめきちが買い取ってくれるカブの値段は,
+          日曜日以外のAM, PMごとに値段が変動する
+        </li>
+        <li>
+          <strong>日曜日の販売価格, 月曜AMの買取価格</strong>を入力することで, 値動きのパターンが判明する
+        </li>
+        <li>カブの値動きのパターンは, 以下の4パターンしか存在しない</li>
+
+        <h5 class="mt-5">三期型(P3)</h5>
+        <li>最も高いカブ買取値を期待できる値動きのパターン</li>
+        <li>
+          🐗の販売価格の
+          <strong>2~6倍</strong>が期待できる💰
+        </li>
+        <li>必ずピークで売却すべし, できれば友達も招待するべし</li>
+
+        <h5 class="mt-3">四期型(P4)</h5>
+        <li>ほどほどのカブ買取値を期待できる値動きのパターン</li>
+        <li>🐗の販売価格の1.5~2倍が期待できる</li>
+        <li>なるべくピークで売却すべし, できれば友達も招待するべし</li>
+
+        <h5 class="mt-3">波型(wave)</h5>
+        <li>特にピークが存在せず, 低額の上下を繰り返す値動きのパターン</li>
+        <li>期待せずに, 買値を超えていたら売却してしまうか, 他の村で売ってしまうべし</li>
+
+        <h5 class="mt-3">ジリ貧型(poor)</h5>
+        <li>値下がりしかしない最悪のパターン😢</li>
+        <li>木曜AMまではP3, P4に変動する可能性があるので, 諦めずに販売価格を眺めよう</li>
+      </div>
+
+      <b-card class="mt-4">
+        <h5>🏝️🏝️ {{ loginuser.islandName }}島のカブは... 🏝️🏝️</h5>
+
+        <div v-if="isExistLoginuserPred">
+          <div v-if="preds[loginuser.id].movingTypes.length > 1">
+            <strong v-for="type in preds[loginuser.id].movingTypes" :key="type">{{type}}</strong>
+            のどれかだとみています
+          </div>
+          <div v-else>
+            今週は
+            <strong>{{preds[loginuser.id].movingTypes[0]}}</strong>
+            で確定!
+            <!-- ピークがあるタイプ -->
+            <div v-if="preds[loginuser.id].getMinExpectedValue()" class="text-muted small">
+              <li>{{ preds[loginuser.id].getMinExpectedValue() }} ~ {{ preds[loginuser.id].getMaxExpectedValue() }}ベルの範囲で, {{getLoginuserPeekTime}} にピークを迎えそうです</li>
+            </div>
+            <div v-else class="text-muted small">
+              <li>ピークがないので, 早めに売ってしまいましょう</li>
+            </div>
+          </div>
+
+          <div v-if="preds[loginuser.id].advices.length > 0" class="mt-3 small text-muted">
+            <h5>つぎにやることは...?</h5>
+            <li v-for="(advice, index) in preds[loginuser.id].advices" :key="index">{{advice}}</li>
+          </div>
+        </div>
+        <div v-else class="small text-muted">
+          <li>まだ今週のカブデータがないので予測できませんでした...</li>
+          <li>日曜の🐗カブ販売値, 月曜AMの🐻カブ買取値を入力!</li>
+        </div>
+      </b-card>
+
+      <div class="mt-3">
+        <b-link
+          href="#"
+          class="small text-muted"
+          @click="state.showAboutThisTable = !state.showAboutThisTable"
+        >+ この表について</b-link>
+        <div v-show="state.showAboutThisTable " class="text-muted small">
+          <li>とびだせどうぶつの森の時代のチャートを使用して, カブ買取価格を推定</li>
+          <li>
+            予測には
+            <strong>日曜日の🐗販売価格</strong>が必須で,
+            <strong>月曜日AMの🐻買取価格</strong>もなるべくほしい
+          </li>
+          <li>飛んでいるデータは保管して推定するため, 毎日細かく入力する必要はない</li>
+          <li>結果が複数表示されている場合は, その中で絞れていない状態</li>
+          <li>あくまで予測なので, 参考程度に</li>
+        </div>
+      </div>
     </div>
   </b-card>
 </template>
@@ -57,21 +150,21 @@ import { Detector } from "~/plugins/kabu_detector";
 export default {
   data() {
     return {
-      state: {},
+      state: {
+        showAboutThisTable: false,
+        tableIndex: 0
+      },
 
       fields_next: [
         {
           key: "peek",
-          label: "ピークの時間",
+          label: "ピーク",
           sortable: true
         },
-        {
-          key: "userId",
-          label: "ユーザー",
-          sortable: false
-        },
+
         {
           key: "type",
+          label: "値動き",
           sortable: false
         },
         {
@@ -80,8 +173,13 @@ export default {
           sortable: true
         },
         {
+          key: "userId",
+          label: "ユーザー",
+          sortable: false
+        },
+        {
           key: "ambiguous_weight",
-          label: "データ入力制度",
+          label: "予想精度(0が最高)",
           sortable: true
         }
       ],
@@ -105,6 +203,7 @@ export default {
   computed: {
     ...mapGetters({
       users: "users/users",
+      loginuser: "users/loginuser",
       kabuValues: "kabuValues/kabuValues",
       store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
     }),
@@ -130,6 +229,49 @@ export default {
       return dayid * 2 + isPm;
     },
 
+    // loginuserの予想データが存在するかどうか
+    isExistLoginuserPred() {
+      const loginuserid = this.loginuser.id;
+      if (this.preds[loginuserid]) {
+        return true;
+      }
+      return false;
+    },
+
+    getLoginuserPeekTime() {
+      const loginuserid = this.loginuser.id;
+      if (!this.preds[loginuserid]) {
+        return "N/A";
+      }
+
+      const lupeeklist = this.preds[loginuserid].peeks;
+      // peekを日付に変更する関数
+      const getpeekstr = timeIndex => {
+        // 今のTimeインデックスを取得
+        const currentTimeIndex = this.get_current_time_index;
+        const peekdelta = timeIndex - currentTimeIndex;
+        const delta_day = Math.floor(peekdelta / 2);
+        const helf_day = peekdelta % 2;
+        const peek_date = add(new Date(), {
+          days: delta_day,
+          hours: helf_day ? 12 : 0
+        });
+        const dateStr = format(peek_date, "M/d (E)");
+        const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
+        const peekStr = dateStr + " " + isPmStr;
+
+        return peekStr;
+      };
+
+      // peekリストを作成
+      const peeklist = [];
+
+      for (let peek of lupeeklist) {
+        peeklist.push(getpeekstr(peek));
+      }
+
+      return peeklist;
+    },
     // next up に乗せるデータたち
     items_next() {
       const result = [];
@@ -169,7 +311,7 @@ export default {
           days: delta_day,
           hours: helf_day ? 12 : 0
         });
-        const dateStr = format(peek_date, "M/d");
+        const dateStr = format(peek_date, "M/d (E)");
         const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
         const peekStr = dateStr + " " + isPmStr;
 
@@ -185,7 +327,14 @@ export default {
         }
 
         // predtypeを取得
-        const predTypeStr = pred.movingTypes[0];
+        let predTypeStr = "";
+        for (const _i in pred.movingTypes) {
+          if (_i > 0) {
+            predTypeStr += ", ";
+          }
+          const predtype = pred.movingTypes[_i];
+          predTypeStr += predtype;
+        }
 
         result.push({
           peek: peekStr,
@@ -199,7 +348,7 @@ export default {
       return result;
     },
 
-    // next up に乗せるデータたち
+    // allに
     items_all() {
       const result = [];
 
@@ -217,7 +366,7 @@ export default {
             days: delta_day,
             hours: helf_day ? 12 : 0
           });
-          const dateStr = format(peek_date, "M/d");
+          const dateStr = format(peek_date, "M/d (E)");
           const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
           const peekStr = dateStr + " " + isPmStr;
 
@@ -226,11 +375,10 @@ export default {
 
         // peekリストを作成
         const peeklist = [];
-        /*
+
         for (let peek of pred.peeks) {
           peeklist.push(getpeekstr(peek));
         }
-        */
 
         // お金の期待価格を取得
         const minValue = pred.getMinExpectedValue();
@@ -242,9 +390,19 @@ export default {
           predValueStr = pred.sunday_am + "付近";
         }
 
+        // predtypeを取得
+        let predTypeStr = "";
+        for (const _i in pred.movingTypes) {
+          if (_i > 0) {
+            predTypeStr += ", ";
+          }
+          const predtype = pred.movingTypes[_i];
+          predTypeStr += predtype;
+        }
+
         result.push({
           peek: peeklist,
-          type: pred.movingTypes,
+          type: predTypeStr,
           userId:
             this.users[userId].name + "@" + this.users[userId]["Island Name"],
           predValue: predValueStr,
