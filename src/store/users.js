@@ -32,8 +32,17 @@ export const mutations = {
                     case "3":
                         user.color = "#5F9EA0"
                         break;
+                    case "5":
+                        user.color = "#336699"
+                        break;
+                    case "6":
+                        user.color = "#CCCC66"
+                        break;
                     case "7":
                         user.color = "#996699"
+                        break;
+                    case "9":
+                        user.color = "#993300"
                         break;
                     case "10":
                         user.color = "#006633"

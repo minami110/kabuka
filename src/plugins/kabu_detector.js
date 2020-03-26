@@ -242,6 +242,16 @@ export class WeeklyData {
                 return true
         }
     }
+
+    // 指定された時間が入力されていたどうかを indexで
+    isMissingByIndex(timeIndex) {
+        try {
+            return this._missing[timeIndex]
+        }
+        catch (e) {
+            return true
+        }
+    }
 }
 
 // カブの値動きの予測データクラス
@@ -324,6 +334,8 @@ export class Prediction {
 
     }
 
+
+
 }
 
 // カブの値動きを判定するクラス
@@ -331,7 +343,7 @@ export class Detector {
 
     // とびだせどうぶつの森の月曜日AM予測モデル
     // Type: A, B, C, D に分岐する
-    static get_type_tobimori_monday_am(week, result) {
+    static get_type_tobimori_monday_am(week, result, currentTimeIndex) {
 
         // 月曜AMのデータがなければ, 曖昧値を10加算する
         if (week.isMissing("monday.am")) {
@@ -346,33 +358,32 @@ export class Detector {
 
         // Xの値に応じて, はじめの判定を行う
         // ここでは, 4期型が確定する
-        if (X < 0.6) {
+        if (X < 0.6 || (0.8 <= X && X < 0.85)) {
             // type-A
-            // 0.4 ~ 0.6 なら, 4期型 確定
             result.setMovingTypes(["P4"])
 
             // peekを検知する
-            // このばあい, たいてい月PMに変動するっぽい??
-            // 決め打ちで, 水曜PM(7)をピークとしておく
-            result.setPeek(7)
+            // このばあい, 以下で変動するみたい (検証中)
+            // 月曜PM(3), 木曜AM(6)
+            // 対応するピークは以下
+            // 木曜PM(7), 土曜AM(10)
+            result.setPeeks([7, 10])
 
-            // 未実装
-            return "A";
+            // 外部の関数で, peekの判定を行う
+            if (Detector.checkPeek(week, result, 2, currentTimeIndex)) {
+                // 変調をかくにん
+                return "A"
+            }
+            else {
+                result.addAdvice("ピークを確定させるために, 入力を続けましょう")
+                return "A"
+            }
+
         } else if (X < 0.8) {
             // type-B
             // 0.6 ~ 0.8 なら, 波型か4期型
             result.setMovingTypes(["wave", "P4"])
             return "B"
-        } else if (X < 0.85) {
-            // type-A
-            // 0.8 ~ 0.85 なら, 3期型(ソースによって違う) か 4期型
-            // とりあえず, 4期型のみとしておく
-            result.setMovingTypes(["P4"])
-            // peekを検知する
-            // このばあい, たいてい月PMに変動するっぽい??
-            // 決め打ちで, 水曜PM(7)をピークとしておく
-            result.setPeek(7)
-            return "A"
         } else if (X < 0.9) {
             // type-C
             // 0.85 ~ 0.9 なら, 3期型か4期型かジリ貧型
@@ -615,6 +626,15 @@ export class Detector {
         const prev_value = week.getData(currentDayIndex - 1)
         const bInclease = ((curr_value - prev_value) > 0)
 
+        // 未入力の値があれば, amiguousを増加
+        if (week.isMissingByIndex(currentDayIndex)) {
+            result.addAmbiguousWeight(2)
+        }
+
+        if (week.isMissingByIndex(currentDayIndex - 1)) {
+            result.addAmbiguousWeight(2)
+        }
+
         // 値上がりしていたら, P3, P4の判定に飛ぶ
         if (bInclease) {
             // 更に次の日に判定するので, limitを超えていないかの確認をする
@@ -652,6 +672,43 @@ export class Detector {
         // 次の日へ再帰する
         const next_timeIndex = currentDayIndex + 1
         return Detector.check_poor(week, result, next_timeIndex, limitDayIndex)
+    }
+
+    // type-A型のpeekを監視する関数
+    static checkPeek(week, result, curentIndex, limitIndex) {
+        // 木曜PMを超えた変調は起きないので, return
+        if (curentIndex > 8) {
+            return true
+        }
+
+        // 現在の日付を超えたらアウト
+        if (curentIndex > limitIndex) {
+            return false
+        }
+
+        // 変調が起きたかどうかを確認する
+        // 現在の値と, 前回の値を比較する
+        const curr_value = week.getData(curentIndex)
+        const prev_value = week.getData(curentIndex - 1)
+        const bInclease = ((curr_value - prev_value) > 0)
+
+        // 未入力の値があれば, amiguousを増加
+        if (week.isMissingByIndex(curentIndex)) {
+            result.addAmbiguousWeight(2)
+        }
+
+        if (week.isMissingByIndex(curentIndex - 1)) {
+            result.addAmbiguousWeight(2)
+        }
+
+        // 値上がりしていたら, 変調の確認, 3つ後にpeekを設定する
+        if (bInclease) {
+            result.setPeek(curentIndex + 3)
+            return true
+        }
+
+        const next_timeIndex = curentIndex + 1
+        return Detector.checkPeek(week, result, next_timeIndex, limitIndex)
     }
 
 
@@ -693,7 +750,7 @@ export class Detector {
             return result;
         }
         // 月曜AMの予測モデルを実施, TypeAならreturn
-        const type_monday_am = Detector.get_type_tobimori_monday_am(week, result)
+        const type_monday_am = Detector.get_type_tobimori_monday_am(week, result, currentTimeIndex)
         if (type_monday_am == "A") {
             return result;
         }
