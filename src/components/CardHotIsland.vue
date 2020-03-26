@@ -35,7 +35,10 @@
       </div>
 
       <div v-show="state.tableIndex==1">
-        <b-table striped hover dark small :items="items_all" :fields="fields_next"></b-table>
+        <div v-if="items_all.length">
+          <b-table striped hover dark small :items="items_all" :fields="fields_next"></b-table>
+        </div>
+        <div v-else class="p-3 text-muted small text-center">😢😢 現在しまはないようです... 😢😢</div>
       </div>
 
       <div v-show="state.tableIndex==2" class="text-muted small p-3">
@@ -121,8 +124,9 @@
             <strong>日曜日の🐗販売価格</strong>が必須で,
             <strong>月曜日AMの🐻買取価格</strong>もなるべくほしい
           </li>
-          <li>飛んでいるデータは保管して推定するため, 毎日細かく入力する必要はない</li>
-          <li>結果が複数表示されている場合は, その中で絞れていない状態</li>
+          <li>飛んでいるデータは保管して推定するため, 毎日細かく入力する必要はありません</li>
+          <li>結果が複数表示されている場合は, 候補がいくつかある状態です</li>
+          <li>アツいしまは, これからピークが訪れる, 予測精度の高いしまです</li>
           <li>あくまで予測なので, 参考程度に</li>
         </div>
       </div>
@@ -247,6 +251,10 @@ export default {
       const lupeeklist = this.preds[loginuserid].peeks;
       // peekを日付に変更する関数
       const getpeekstr = timeIndex => {
+        // もしtimeIndexがnullなら, ピークなし
+        if (!timeIndex) {
+          return "ピークなし";
+        }
         // 今のTimeインデックスを取得
         const currentTimeIndex = this.get_current_time_index;
         const peekdelta = timeIndex - currentTimeIndex;
@@ -357,6 +365,10 @@ export default {
 
         // peekを日付に変更する
         const getpeekstr = timeIndex => {
+          // もしtimeIndexがnullなら, ピークなし
+          if (!timeIndex) {
+            return "ピークなし";
+          }
           // 今のTimeインデックスを取得
           const currentTimeIndex = this.get_current_time_index;
           const peekdelta = timeIndex - currentTimeIndex;
