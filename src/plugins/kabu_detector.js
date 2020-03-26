@@ -443,6 +443,7 @@ export class Detector {
                 // 月曜PMに, 波型の確定 ????
                 result.addAmbiguousWeight(5)
                 result.setMovingTypes(["wave"])
+                result.addAdvice("チャートに記入漏れがある値動きなので, 観察してください")
                 return "A";
             }
         }
@@ -515,6 +516,10 @@ export class Detector {
             } else {
                 // 火曜PMへ
                 result.setMovingTypes(["wave", "P3", "P4"])
+                // peekは
+                // P3の場合,火曜PM(5)
+                // P4の場合, 水曜AM(6)
+                result.setPeeks([null, 5, 6])
                 return "B"
             }
         }
@@ -655,6 +660,7 @@ export class Detector {
             else {
                 const nextmag = week.magnitudeByIndex(next_timeIndex)
                 // ここ, 1.43でP4だったことがあるので, 微妙に上げている
+                // 1/7 近辺の値かと思われる
                 if (nextmag < 1.45) {
                     // P4が確定, ピークは2つ次
                     result.setMovingTypes(["P4"])
@@ -694,11 +700,7 @@ export class Detector {
 
         // 未入力の値があれば, amiguousを増加
         if (week.isMissingByIndex(curentIndex)) {
-            result.addAmbiguousWeight(2)
-        }
-
-        if (week.isMissingByIndex(curentIndex - 1)) {
-            result.addAmbiguousWeight(2)
+            result.addAmbiguousWeight(5)
         }
 
         // 値上がりしていたら, 変調の確認, 3つ後にpeekを設定する
