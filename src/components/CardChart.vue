@@ -7,7 +7,7 @@
         <span>{{ beginDayStr }}</span>
         <span>~</span>
         <span>{{ endDayStr }}</span>
-        <span class="small text-muted">(Week: 1)</span>
+        <span class="small text-muted">(Week: {{getWeekIndex}})</span>
       </h5>
     </b-card-title>
 
@@ -35,6 +35,7 @@ import parse from "date-fns/parse";
 import getDay from "date-fns/getDay";
 import isAfter from "date-fns/isAfter";
 import isBefore from "date-fns/isBefore";
+import differenceInWeeks from "date-fns/differenceInWeeks";
 
 // import components
 import LineChart from "~/components/LineChart";
@@ -106,6 +107,9 @@ export default {
       kabuValues: "kabuValues/kabuValues",
       store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
     }),
+    getWeekIndex() {
+      return differenceInWeeks(this.beginDay, new Date(2020, 2, 14));
+    },
     beginDayStr() {
       return format(this.beginDay, "M/d");
     },

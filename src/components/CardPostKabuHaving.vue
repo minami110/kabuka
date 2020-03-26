@@ -18,7 +18,7 @@
                 placeholder="???"
                 v-model="form.valueUriSell"
                 :readonly="getIsFormDisabled"
-                @change="onChangedValueUriSell"
+                @input="onChangedValueUriSell"
                 lazy
                 required
                 min="1"
@@ -29,7 +29,7 @@
               <h6>🐗の販売値</h6>
             </template>
             <template #description>
-              <span class="text-muted small">{{getLoginUserIslandName}}の, 🥬販売値を入力</span>
+              <span class="text-muted small">{{getLoginUserIslandName}}の, 🥬販売値を入力. 値動きの予測に必須.</span>
             </template>
           </b-form-group>
         </b-col>

@@ -363,11 +363,11 @@ export class Detector {
             result.setMovingTypes(["P4"])
 
             // peekを検知する
-            // このばあい, 以下で変動するみたい (検証中)
-            // 月曜PM(3), 木曜AM(6)
+            // このばあい, 以下で変調するみたい (検証中)
+            // 火曜AM(4), 木曜AM(8)
             // 対応するピークは以下
-            // 木曜PM(7), 土曜AM(10)
-            result.setPeeks([7, 10])
+            // 水曜PM(7), 土曜AM(11)
+            result.setPeeks([7, 11])
 
             // 外部の関数で, peekの判定を行う
             if (Detector.checkPeek(week, result, 3, currentTimeIndex)) {
@@ -381,13 +381,22 @@ export class Detector {
 
         } else if (X < 0.8) {
             // type-B
-            // 0.6 ~ 0.8 なら, 波型か4期型
-            result.setMovingTypes(["wave", "P4"])
+            // 0.6 ~ 0.8 なら, 波型か4期型か3期型
+            result.setMovingTypes(["wave", "P3", "P4"])
+            // peekは
+            // P3の場合,火曜PM(5)
+            // P4の場合, 水曜AM(6) 
+            result.setPeeks([null, 5, 6])
+
+            // 月曜PMへ
             return "B"
+
         } else if (X < 0.9) {
             // type-C
             // 0.85 ~ 0.9 なら, 3期型か4期型かジリ貧型
             result.setMovingTypes(["poor", "P3", "P4"])
+
+            // 月曜PMへ
             return "C"
         } else {
             // type-D
@@ -421,6 +430,7 @@ export class Detector {
             if (delta_mon == 0 || delta_mon > 8) {
                 // 月曜PMに, 波型の確定!
                 result.setMovingTypes(["wave"])
+                result.clearPeek()
                 return "A";
             }
             // もし値上がりしていたら
@@ -429,10 +439,15 @@ export class Detector {
                 if (week.magnitude("monday.pm") < 0.9) {
                     // 月曜PMに, 波型の確定!
                     result.setMovingTypes(["wave"])
+                    result.clearPeek()
                     return "A";
                 } else {
                     // 火曜AMの判定に
+                    // peekは
+                    // P3の場合,火曜PM(5)
+                    // P4の場合, 水曜AM(6) 
                     result.setMovingTypes(["wave", "P3", "P4"])
+                    result.setPeeks([null, 5, 6])
                     return "B"
                 }
             }
@@ -443,6 +458,7 @@ export class Detector {
                 // 月曜PMに, 波型の確定 ????
                 result.addAmbiguousWeight(5)
                 result.setMovingTypes(["wave"])
+                result.clearPeek()
                 result.addAdvice("チャートに記入漏れがある値動きなので, 観察してください")
                 return "A";
             }
@@ -458,6 +474,8 @@ export class Detector {
             // 火曜AMに確定する
             if (week.monday.pm > week.monday.am) {
                 result.setMovingTypes(["P3", "P4"])
+                // peekは火曜PMか水曜AM
+                result.setPeeks([5, 6])
                 // 火曜AMへ
                 return "C-1"
             }
@@ -480,6 +498,7 @@ export class Detector {
                 // 月曜PMに, 波型の確定!
                 // 波型なのでピークはなし
                 result.setMovingTypes(["wave"])
+                result.clearPeek()
                 return "A";
             } else {
                 // 火曜AMの値で判定する
@@ -512,6 +531,7 @@ export class Detector {
             if (mag < 0.9) {
                 // 火曜AMに, 波型の確定
                 result.setMovingTypes(["wave"])
+                result.clearPeek()
                 return "A";
             } else {
                 // 火曜PMへ

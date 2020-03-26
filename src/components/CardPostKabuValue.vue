@@ -25,7 +25,7 @@
                 placeholder="???"
                 v-model="form.value"
                 :readonly="readOnlyValueInput"
-                @change="onChangedValue"
+                @input="onChangedValue"
                 lazy
                 required
                 min="1"
