@@ -7,7 +7,7 @@
         <span>{{ beginDayStr }}</span>
         <span>~</span>
         <span>{{ endDayStr }}</span>
-        <span class="small text-muted">(Week: 1)</span>
+        <span class="small text-muted">(Week: {{getWeekIndex}})</span>
       </h5>
     </b-card-title>
 
@@ -41,7 +41,7 @@
         <div v-else class="p-3 text-muted small text-center">😢😢 現在しまはないようです... 😢😢</div>
       </div>
 
-      <div v-show="state.tableIndex==2" class="text-muted small p-3">
+      <div v-show="state.tableIndex==2" class="text-muted small p-3 border-top border-secondary">
         <h5 class="mt-1">ピーク</h5>
         <li>一週間のうちで, カブが最高値をつける瞬間</li>
         <li>ピークをすぎると下降しかしないため, ピークに売るのが吉</li>
@@ -84,7 +84,7 @@
 
         <div v-if="isExistLoginuserPred">
           <div v-if="preds[loginuser.id].movingTypes.length > 1">
-            <strong v-for="type in preds[loginuser.id].movingTypes" :key="type">{{type}}</strong>
+            <strong v-for="type in preds[loginuser.id].movingTypes" :key="type">{{type + ", "}}</strong>
             のどれかだとみています
           </div>
           <div v-else>
@@ -118,16 +118,18 @@
           @click="state.showAboutThisTable = !state.showAboutThisTable"
         >+ この表について</b-link>
         <div v-show="state.showAboutThisTable " class="text-muted small">
-          <li>とびだせどうぶつの森の時代のチャートを使用して, カブ買取価格を推定</li>
-          <li>
-            予測には
-            <strong>日曜日の🐗販売価格</strong>が必須で,
-            <strong>月曜日AMの🐻買取価格</strong>もなるべくほしい
-          </li>
-          <li>飛んでいるデータは保管して推定するため, 毎日細かく入力する必要はありません</li>
-          <li>結果が複数表示されている場合は, 候補がいくつかある状態です</li>
-          <li>アツいしまは, これからピークが訪れる, 予測精度の高いしまです</li>
-          <li>あくまで予測なので, 参考程度に</li>
+          <ul>
+            <li>とびだせどうぶつの森の時代のチャートを使用して, カブ買取価格を推定</li>
+            <li>
+              予測には
+              <strong>日曜日の🐗販売価格</strong>が必須で,
+              <strong>月曜日AMの🐻買取価格</strong>もなるべくほしい
+            </li>
+            <li>飛んでいるデータは保管して推定するため, 毎日細かく入力する必要はありません</li>
+            <li>結果が複数表示されている場合は, 候補がいくつかある状態です</li>
+            <li>アツいしまは, これからピークが訪れる, 予測精度の高いしまです</li>
+            <li>あくまで予測なので, 参考程度に</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -147,6 +149,7 @@ import getDay from "date-fns/getDay";
 import isAfter from "date-fns/isAfter";
 import isBefore from "date-fns/isBefore";
 import getHours from "date-fns/getHours";
+import differenceInWeeks from "date-fns/differenceInWeeks";
 
 //
 import { Detector } from "~/plugins/kabu_detector";
@@ -168,17 +171,17 @@ export default {
 
         {
           key: "type",
-          label: "値動き",
-          sortable: false
+          label: "値動きタイプ",
+          sortable: true
         },
         {
           key: "predValue",
-          label: "予想価格幅",
+          label: "💰",
           sortable: true
         },
         {
           key: "userId",
-          label: "ユーザー",
+          label: "🏝️",
           sortable: false
         },
         {
@@ -211,6 +214,9 @@ export default {
       kabuValues: "kabuValues/kabuValues",
       store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
     }),
+    getWeekIndex() {
+      return differenceInWeeks(this.beginDay, new Date(2020, 2, 14));
+    },
     beginDayStr() {
       return format(this.beginDay, "M/d");
     },
@@ -502,11 +508,7 @@ export default {
           }
         }
 
-        // 今のTimeインデックスを取得
-        const dayid = getDay(new Date()); // 日曜なら0
-        const hour = getHours(new Date());
-        const isPm = hour > 11 ? 1 : 0;
-        const timeIndex = dayid * 2 + isPm;
+        const timeIndex = this.get_current_time_index;
 
         const pred = Detector.detect_v_tobimori(__d, timeIndex);
         _preds[user_id] = pred;
