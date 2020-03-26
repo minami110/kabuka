@@ -6,6 +6,7 @@ export class WeeklyData {
     constructor(datas) {
         this._missing = []
 
+        // validate original data
         const _datas = this._valid(datas)
 
         this.sunday = {
@@ -61,20 +62,98 @@ export class WeeklyData {
     }
 
     // 未入力のデータを穴埋めする関数
+    // 間に挟まれているデータは, 平均化する
     // [1, 2, 3] -> [1, 2, 3]
-    // [1, null, 3, null] -> [1, 1, 3, 3]
+    // [1, null, 3, null] -> [1, 2, 3, 3]
     // [null, 2, null] -> [null, 2, 2]
     // [null, null] -> [null, null]
     _fill_blank_data(datas) {
+        const data_length = datas.length
         const result = []
-        let prev_data = null
-        for (const data of datas) {
-            if (data) {
-                prev_data = data
+        for (let index in datas) {
+            const data = datas[index]
+            if (!data) {
+                // nullの場合, 自分の前のデータと, 自分の後ろに存在するデータを確認しに行く
+                // 1個前に2, 2個後に8 の場合 => (8-2)/(1 + 2) で増分値が2ということがわかるので
+                // 2 + 2 * 1 = 4 が求まる
+                // 前も全てnullのばあいは, nullとする 
+                // 後ろがnullのばあいは, 前の値をそのまま使用する
+                let prev_data = null
+                let prev_i = Number(index) - 1;
+                for (; prev_i >= 0; prev_i--) {
+                    const _d = datas[prev_i]
+                    if (_d) {
+                        prev_data = _d
+                        break
+                    }
+                }
+                if (!prev_data) {
+                    result.push(null)
+                    continue
+                }
+
+                let next_data = null
+                let next_i = Number(index) + 1
+                for (; next_i < data_length; next_i++) {
+                    const _d = datas[next_i]
+                    if (_d) {
+                        next_data = _d
+                        break
+                    }
+                }
+                if (!next_data) {
+                    result.push(prev_data)
+                    continue
+                }
+
+                const index_delta = next_i - prev_i
+                const value_delta = (next_data - prev_data) / index_delta
+                const interp_data = prev_data + (Number(index) - prev_i) * value_delta
+                result.push(interp_data)
             }
-            result.push(prev_data)
+            else {
+                // データが存在する場合は, そのまま使用する
+                result.push(data)
+            }
         }
         return result
+    }
+
+    // timeIndexを使用して値を取得する
+    getData(timeIndex) {
+        switch (timeIndex) {
+            case 0:
+                return this.sunday.am
+            case 1:
+                return this.sunday.pm
+            case 2:
+                return this.monday.am
+            case 3:
+                return this.monday.pm
+            case 4:
+                return this.tuesday.am
+            case 5:
+                return this.tuesday.pm
+            case 6:
+                return this.wednesday.am
+            case 7:
+                return this.wednesday.pm
+            case 8:
+                return this.thursday.am
+            case 9:
+                return this.thursday.pm
+            case 10:
+                return this.friday.am
+            case 11:
+                return this.friday.pm
+            case 12:
+                return this.saturday.am
+            case 13:
+                return this.saturday.pm
+            default:
+                return null
+        }
+
     }
 
     // 指定された時間 / 日曜AM の値を計算
@@ -113,6 +192,21 @@ export class WeeklyData {
             }
 
         }
+    }
+
+    // 指定された時間 / 日曜AM の値を計算, timeIndexで取得
+    magnitudeByIndex(timeIndex) {
+        if (!this.sunday.am) {
+            return 0
+        }
+
+        const sunday_am = this.sunday.am;
+        const target_data = this.getData(timeIndex)
+        if (!target_data) {
+            return 0
+        }
+
+        return target_data / sunday_am;
     }
 
     // 指定された時間が入力されていたかどうか
@@ -154,6 +248,9 @@ export class WeeklyData {
 export class Prediction {
 
     constructor() {
+        // 日曜Amの販売価格, 予想値に必要
+        this.sunday_am = 0
+
         // 値動きタイプの候補, デフォルトはすべて
         this.movingTypes = ["wave", "poor", "P3", "P4"]
         // 予測するにあたって発生したエラータイプ
@@ -164,7 +261,7 @@ export class Prediction {
         // 月曜AMは10, その他は5 とする
         this.ambiguous_weight = 0
         // peek日のtimeIndex
-        this.peek = 0
+        this.peeks = []
     }
 
     addAdvice(msg) {
@@ -191,8 +288,42 @@ export class Prediction {
     }
 
     setPeek(value) {
-        this.peek = value
+        this.peeks = [value]
     }
+
+    setPeeks(values) {
+        this.peeks = values
+    }
+
+    clearPeek() {
+        this.peeks = []
+    }
+
+    getMinExpectedValue() {
+        if (this.movingTypes = ["P4"]) {
+            return this.sunday_am * 1.5
+        }
+        else if (this.movingTypes = ["P3"]) {
+            return this.sunday_am * 2
+        }
+        else {
+            return null
+        }
+    }
+
+    getMaxExpectedValue() {
+        if (this.movingTypes = ["P4"]) {
+            return this.sunday_am * 2
+        }
+        else if (this.movingTypes = ["P3"]) {
+            return this.sunday_am * 6
+        }
+        else {
+            return null
+        }
+
+    }
+
 }
 
 // カブの値動きを判定するクラス
@@ -208,6 +339,8 @@ export class Detector {
             result.addAmbiguousWeight(10)
         }
 
+        result.sunday_am = week.sunday.am
+
         // X = 月曜AM買値 / 日曜売値 の値を計算する
         const X = week.magnitude("monday.am")
 
@@ -219,6 +352,10 @@ export class Detector {
             result.setMovingTypes(["P4"])
 
             // peekを検知する
+            // このばあい, たいてい月PMに変動するっぽい??
+            // 決め打ちで, 水曜PM(7)をピークとしておく
+            result.setPeek(7)
+
             // 未実装
             return "A";
         } else if (X < 0.8) {
@@ -231,8 +368,10 @@ export class Detector {
             // 0.8 ~ 0.85 なら, 3期型(ソースによって違う) か 4期型
             // とりあえず, 4期型のみとしておく
             result.setMovingTypes(["P4"])
-
-            // peekを検知する 未実装
+            // peekを検知する
+            // このばあい, たいてい月PMに変動するっぽい??
+            // 決め打ちで, 水曜PM(7)をピークとしておく
+            result.setPeek(7)
             return "A"
         } else if (X < 0.9) {
             // type-C
@@ -244,6 +383,8 @@ export class Detector {
             // 0.9 ~ 1.4 なら, 波型か4期型
             // 月曜PMで確定
             result.setMovingTypes(["wave", "P4"])
+            // P4の場合, peekは水曜AM(6)
+            result.setPeeks([null, 6])
             return "D"
         }
     }
@@ -330,9 +471,10 @@ export class Detector {
                 return "A";
             } else {
                 // 火曜AMの値で判定する
-                result.setMovingTypes(["wave"])
+                // P4のばあいは, 常に水曜AM(6)にピーク
+                result.setMovingTypes(["wave", "P4"])
+                result.setPeeks([null, 6])
                 return "D"
-
             }
         }
 
@@ -400,6 +542,7 @@ export class Detector {
             if (mag < 1.4) {
                 // 火曜AMに 波型で確定!
                 result.setMovingTypes(["wave"])
+                result.clearPeek()
                 return "A";
             } else {
                 // 火曜AMに 4期型で確定!
@@ -454,83 +597,63 @@ export class Detector {
 
     // とびだせどうぶつの森の, C-2パターン検証再帰モデル
     static check_poor(week, result, currentDayIndex, limitDayIndex) {
+
+        // 木曜PMを超えたらジリ貧型が決定する
+        if (currentDayIndex > 8) {
+            result.setMovingTypes(["poor"])
+            result.clearPeek()
+            return "A"
+        }
+
         // 現在の日付を超えたらアウト
         if (currentDayIndex > limitDayIndex) {
             return "A"
         }
 
-        // 木曜PMを超えたらアウト
-        if (currentDayIndex > 8) {
-            // ジリ貧型決定
-            result.setMovingTypes(["poor"])
-            return "A"
+        // 現在の値と, 前回の値を比較する
+        const curr_value = week.getData(currentDayIndex)
+        const prev_value = week.getData(currentDayIndex - 1)
+        const bInclease = ((curr_value - prev_value) > 0)
+
+        // 値上がりしていたら, P3, P4の判定に飛ぶ
+        if (bInclease) {
+            // 更に次の日に判定するので, limitを超えていないかの確認をする
+            const next_timeIndex = currentDayIndex + 1
+            if (next_timeIndex > limitDayIndex) {
+                // 値動きが, P3かP4に確定!
+                result.setMovingTypes(["P3", "P4"])
+
+                // アドバイスを追記する
+                result.addAdvice("次のカブ値の入力で確定!")
+
+                // P3 なら現在の 2後, P4なら現在の 3後にピークを迎える
+                const p3peek = currentDayIndex + 2
+                const p4peek = currentDayIndex + 3
+                result.setPeeks([p3peek, p4peek])
+                return "A"
+            }
+            else {
+                const nextmag = week.magnitudeByIndex(next_timeIndex)
+                // ここ, 1.43でP4だったことがあるので, 微妙に上げている
+                if (nextmag < 1.45) {
+                    // P4が確定, ピークは2つ次
+                    result.setMovingTypes(["P4"])
+                    result.setPeek(next_timeIndex + 2)
+                    return "A"
+                } else {
+                    // P3が確定, ピークは1つ次
+                    result.setMovingTypes(["P3"])
+                    result.setPeek(next_timeIndex + 1)
+                    return "A"
+                }
+            }
         }
 
-        // 値上がりしたかを確認する
-        // indexで取得したいができないので最悪
-        // 値上がりした場合, 次の関数へ飛ぶ
-        switch (currentDayIndex) {
-
-            // 火曜AM
-            case 4:
-                if (week.tuesday.am - week.monday.pm > 0) {
-                    const nextmag = week.magnitude("tuesday.pm")
-                    return Detector.check_poor_final(result, nextmag, currentDayIndex + 1, limitDayIndex)
-                }
-                break;
-            // 火曜PM
-            case 5:
-                if (week.tuesday.pm - week.tuesday.am > 0) {
-                    const nextmag = week.magnitude("wednesday.am")
-                    return Detector.check_poor_final(result, nextmag, currentDayIndex + 1, limitDayIndex)
-                }
-                break;
-            // 水曜AM
-            case 6:
-                if (week.wednesday.am - week.tuesday.pm > 0) {
-                    const nextmag = week.magnitude("wednesday.pm")
-                    return Detector.check_poor_final(result, nextmag, currentDayIndex + 1, limitDayIndex)
-                }
-                break;
-            // 水曜PM
-            case 7:
-                if (week.wednesday.pm - week.wednesday.am > 0) {
-                    const nextmag = week.magnitude("thursday.am")
-                    return Detector.check_poor_final(result, nextmag, currentDayIndex + 1, limitDayIndex)
-                }
-                break;
-            // 木曜AM
-            case 7:
-                if (week.thursday.am - week.wednesday.pm > 0) {
-                    const nextmag = week.magnitude("thursday.pm")
-                    return Detector.check_poor_final(result, nextmag, currentDayIndex + 1, limitDayIndex)
-                }
-                break;
-
-        }
-
-        return Detector.check_poor(week, result, currentDayIndex + 1, limitDayIndex)
+        // 次の日へ再帰する
+        const next_timeIndex = currentDayIndex + 1
+        return Detector.check_poor(week, result, next_timeIndex, limitDayIndex)
     }
 
-    static check_poor_final(result, mag, current, limidDay) {
-        // 現在の日付を超えたらアウト
-        if (current > limidDay) {
-            return "A"
-        }
-
-        if (mag < 1.4) {
-            // P4が確定, ピークは2つ次
-            result.setMovingTypes(["P4"])
-            result.setPeek(current + 2)
-            return "A"
-        } else {
-            // P3が確定, ピークは1つ次
-            result.setMovingTypes(["P3"])
-            result.setPeek(current + 1)
-            return "A"
-        }
-
-    }
 
 
 
@@ -559,6 +682,8 @@ export class Detector {
         if (week.isMissing("sunday.am")) {
             result.addAdvice("日曜のカブ売値を入力しましょう!")
             result.addError("日曜のカブ売値は, 予測に必須です")
+            result.clearPeek()
+            result.addAmbiguousWeight(50)
             return result;
         }
 

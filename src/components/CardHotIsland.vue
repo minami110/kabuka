@@ -28,10 +28,11 @@
       <!-- 型が確定している島のリスト -->
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
-      <b-card class="mt-3">
-        <h5>予測</h5>
-        <b-table striped hover dark small :items="items_next" :fields="fields_next"></b-table>
-      </b-card>
+      <h5 class="mt-3">次にピークが来るしま</h5>
+      <b-table striped hover dark small :items="items_next" :fields="fields_next"></b-table>
+
+      <h5 class="mt-3">全データ</h5>
+      <b-table striped hover dark small :items="items_all" :fields="fields_next"></b-table>
     </div>
   </b-card>
 </template>
@@ -75,7 +76,7 @@ export default {
         },
         {
           key: "ambiguous_weight",
-          label: "正確さ",
+          label: "データ入力制度",
           sortable: true
         }
       ],
@@ -117,22 +118,104 @@ export default {
       }
     },
 
-    // next up に乗せるデータたち
-    items_next() {
-      // 今のTimeインデックスを取得
+    get_current_time_index() {
       const dayid = getDay(new Date()); // 日曜なら0
       const hour = getHours(new Date());
       const isPm = hour > 11 ? 1 : 0;
-      const timeIndex = dayid * 2 + isPm;
+      return dayid * 2 + isPm;
+    },
 
+    // next up に乗せるデータたち
+    items_next() {
       const result = [];
+
       for (const userId in this.preds) {
         const pred = this.preds[userId];
+
+        // 入力精度が低い島は弾く
+        if (pred.ambiguous_weight > 15) {
+          continue;
+        }
+
+        // typeが確定している島だけにする
+        if (pred.movingTypes.length != 1) {
+          continue;
+        }
+
+        // ピーク予想が一つの島だけにする
+        if (pred.peeks.length != 1) {
+          continue;
+        }
+
+        // 今のTimeインデックスを取得
+        const currentTimeIndex = this.get_current_time_index;
+
+        // これからくるpeekの島だけ表示する
+        const peek = pred.peeks[0];
+        if (peek < currentTimeIndex) {
+          continue;
+        }
+
+        // peekを日付に変更する
+        const peekdelta = peek - currentTimeIndex;
+        const delta_day = Math.floor(peekdelta / 2);
+        const helf_day = peekdelta % 2;
+        const peek_date = add(new Date(), {
+          days: delta_day,
+          hours: helf_day ? 12 : 0
+        });
+        const dateStr = format(peek_date, "M/d");
+        const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
+        const peekStr = dateStr + " " + isPmStr;
+
         result.push({
-          peek: pred.peek < 2 ? "未確定" : pred.peek - timeIndex + "後",
-          type: pred.movingTypes,
-          userId: this.users[userId].name,
-          ambiguous_weight: 20 - pred.ambiguous_weight
+          peek: peekStr,
+          type: pred.movingTypes[0],
+          userId:
+            this.users[userId].name + "@" + this.users[userId]["Island Name"],
+          ambiguous_weight: 0 - pred.ambiguous_weight
+        });
+      }
+      return result;
+    },
+
+    // next up に乗せるデータたち
+    items_all() {
+      const result = [];
+
+      for (const userId in this.preds) {
+        const pred = this.preds[userId];
+
+        // peekを日付に変更する
+        const getpeekstr = timeIndex => {
+          // 今のTimeインデックスを取得
+          const currentTimeIndex = this.get_current_time_index;
+          const peekdelta = timeIndex - currentTimeIndex;
+          const delta_day = Math.floor(peekdelta / 2);
+          const helf_day = peekdelta % 2;
+          const peek_date = add(new Date(), {
+            days: delta_day,
+            hours: helf_day ? 12 : 0
+          });
+          const dateStr = format(peek_date, "M/d");
+          const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
+          const peekStr = dateStr + " " + isPmStr;
+
+          return peekStr;
+        };
+
+        // peekリストを作成
+        const peeklist = [];
+        for (let peek of pred.peeks) {
+          peeklist.push(getpeekstr(peek));
+        }
+
+        result.push({
+          peek: peeklist,
+          type: pred.movingTypes[0],
+          userId:
+            this.users[userId].name + "@" + this.users[userId]["Island Name"],
+          ambiguous_weight: 0 - pred.ambiguous_weight
         });
       }
       return result;
@@ -222,7 +305,6 @@ export default {
         const isPm = hour > 11 ? 1 : 0;
         const timeIndex = dayid * 2 + isPm;
 
-        // このデータをもとに, 予測を行う
         const pred = Detector.detect_v_tobimori(__d, timeIndex);
         _preds[user_id] = pred;
       }

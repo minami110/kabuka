@@ -4,6 +4,8 @@ test('Detector::construct', () => {
     let d = new Detector()
 });
 
+
+
 test('Detector::detect_v_tobimori', () => {
 
     // きちんと予測できるかのテストを行う
@@ -57,6 +59,8 @@ test('Detector::detect_v_tobimori', () => {
     r = Detector.detect_v_tobimori(datas, dayIndex)
     expect(r.ambiguous_weight).toBe(10);
 
+
+    /*
     //===== 火曜AMの予測 ======
     dayIndex = 4
     // 入力済み
@@ -84,8 +88,75 @@ test('Detector::detect_v_tobimori', () => {
     datas = [92, null, 82, 77, 138, 131, 154, 161]
     r = Detector.detect_v_tobimori(datas, dayIndex)
     console.log(r)
-
-
-
+    */
 
 });
+
+
+// P4を予測してほしいテスト
+test('Detector::detect_P4', () => {
+
+    let r = null
+    let timeIndex = 0
+
+    const data_a = [110, null, 95, 91, 86, 81, 75, 72, 115, 210]
+
+    // 木曜AM時点で P3かP4
+    timeIndex = 8
+    r = Detector.detect_v_tobimori(data_a, timeIndex)
+    expect(r.movingTypes).toEqual(["P3", "P4"])
+    expect(r.peeks).toEqual([10, 11])
+
+    // 木曜PM時点で, P3に確定
+    timeIndex = 9
+    r = Detector.detect_v_tobimori(data_a, timeIndex)
+    expect(r.movingTypes).toEqual(["P3"])
+    expect(r.peeks).toEqual([10])
+
+
+    const data_b = [98, null, 50, 46, 124, 131, 181, 191, 165]
+
+    // 月曜AM
+    timeIndex = 2
+    r = Detector.detect_v_tobimori(data_b, timeIndex)
+    console.log(r)
+    //expect(r.movingTypes).toEqual(["wave", "P4"])
+
+    // 月曜PM
+    timeIndex = 3
+    r = Detector.detect_v_tobimori(data_b, timeIndex)
+    // この時点で
+    console.log(r)
+
+
+
+    const data_c = ["92", null, "82", "77", "138", "131", "154", "161", "142", null, null, null, null, null]
+
+    console.log("-------のせる P4-----")
+
+    // 月曜AM type-c
+    timeIndex = 2
+    r = Detector.detect_v_tobimori(data_c, timeIndex)
+    console.log("-- 月曜AM --")
+    console.log(r)
+
+    // 月曜PM ここで倍値が下がる,  ジリ貧ループへ
+    timeIndex = 3
+    r = Detector.detect_v_tobimori(data_c, timeIndex)
+    console.log("-- 月曜PM --")
+    console.log(r)
+
+    // 火曜AM ジリ貧だったが, ここで変調する, 次で確定する
+    timeIndex = 4
+    r = Detector.detect_v_tobimori(data_c, timeIndex)
+    console.log("-- 火曜AM 変調する --")
+    console.log(r)
+
+    // 火曜PM P4の確定
+    timeIndex = 5
+    r = Detector.detect_v_tobimori(data_c, timeIndex)
+    console.log("-- 火曜PM --")
+    console.log(r)
+
+
+})
