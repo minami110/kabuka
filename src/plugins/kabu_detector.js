@@ -300,10 +300,10 @@ export class Prediction {
     }
 
     getMinExpectedValue() {
-        if (this.movingTypes = ["P4"]) {
+        if (this.movingTypes.toString() == ['P4'].toString()) {
             return this.sunday_am * 1.5
         }
-        else if (this.movingTypes = ["P3"]) {
+        else if (this.movingTypes.toString() == ["P3"].toString()) {
             return this.sunday_am * 2
         }
         else {
@@ -312,10 +312,10 @@ export class Prediction {
     }
 
     getMaxExpectedValue() {
-        if (this.movingTypes = ["P4"]) {
+        if (this.movingTypes.toString() == ['P4'].toString()) {
             return this.sunday_am * 2
         }
-        else if (this.movingTypes = ["P3"]) {
+        else if (this.movingTypes.toString() == ['P3'].toString()) {
             return this.sunday_am * 6
         }
         else {

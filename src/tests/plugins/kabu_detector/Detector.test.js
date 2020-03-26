@@ -101,6 +101,8 @@ test('Detector::detect_P4', () => {
 
     const data_a = [110, null, 95, 91, 86, 81, 75, 72, 115, 210]
 
+    console.log("az")
+
     // 木曜AM時点で P3かP4
     timeIndex = 8
     r = Detector.detect_v_tobimori(data_a, timeIndex)
@@ -114,25 +116,26 @@ test('Detector::detect_P4', () => {
     expect(r.peeks).toEqual([10])
 
 
+    console.log("nemu")
     const data_b = [98, null, 50, 46, 124, 131, 181, 191, 165]
 
     // 月曜AM
     timeIndex = 2
     r = Detector.detect_v_tobimori(data_b, timeIndex)
-    console.log(r)
+    // console.log(r)
     //expect(r.movingTypes).toEqual(["wave", "P4"])
 
     // 月曜PM
     timeIndex = 3
     r = Detector.detect_v_tobimori(data_b, timeIndex)
     // この時点で
-    console.log(r)
+    // console.log(r)
 
 
 
     const data_c = ["92", null, "82", "77", "138", "131", "154", "161", "142", null, null, null, null, null]
 
-    console.log("-------のせる P4-----")
+    console.log("-------nose P4-----")
 
     // 月曜AM type-c
     timeIndex = 2
