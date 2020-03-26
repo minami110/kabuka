@@ -75,6 +75,11 @@ export default {
           sortable: false
         },
         {
+          key: "predValue",
+          label: "予想価格幅",
+          sortable: true
+        },
+        {
           key: "ambiguous_weight",
           label: "データ入力制度",
           sortable: true
@@ -130,7 +135,7 @@ export default {
       const result = [];
 
       for (const userId in this.preds) {
-        const pred = this.preds[userId];
+        let pred = this.preds[userId];
 
         // 入力精度が低い島は弾く
         if (pred.ambiguous_weight > 15) {
@@ -168,11 +173,26 @@ export default {
         const isPmStr = getHours(peek_date) > 12 ? "PM" : "AM";
         const peekStr = dateStr + " " + isPmStr;
 
+        // お金の期待価格を取得
+
+        const minValue = pred.getMinExpectedValue();
+        const maxValue = pred.getMaxExpectedValue();
+        let predValueStr = "";
+        if (minValue) {
+          predValueStr = minValue + " ~ " + maxValue;
+        } else {
+          predValueStr = pred.sunday_am + "付近";
+        }
+
+        // predtypeを取得
+        const predTypeStr = pred.movingTypes[0];
+
         result.push({
           peek: peekStr,
-          type: pred.movingTypes[0],
+          type: predTypeStr,
           userId:
             this.users[userId].name + "@" + this.users[userId]["Island Name"],
+          predValue: predValueStr,
           ambiguous_weight: 0 - pred.ambiguous_weight
         });
       }
@@ -206,15 +226,28 @@ export default {
 
         // peekリストを作成
         const peeklist = [];
+        /*
         for (let peek of pred.peeks) {
           peeklist.push(getpeekstr(peek));
+        }
+        */
+
+        // お金の期待価格を取得
+        const minValue = pred.getMinExpectedValue();
+        const maxValue = pred.getMaxExpectedValue();
+        let predValueStr = "";
+        if (minValue) {
+          predValueStr = minValue + " ~ " + maxValue;
+        } else {
+          predValueStr = pred.sunday_am + "付近";
         }
 
         result.push({
           peek: peeklist,
-          type: pred.movingTypes[0],
+          type: pred.movingTypes,
           userId:
             this.users[userId].name + "@" + this.users[userId]["Island Name"],
+          predValue: predValueStr,
           ambiguous_weight: 0 - pred.ambiguous_weight
         });
       }
