@@ -5,19 +5,26 @@ test('WeeklyData::construct', () => {
     expect(w.sunday.am).toBe(null);
     expect(w.saturday.am).toBe(null);
 
-    // null is filled
+    // null is filled (interpolated)
     w = new WeeklyData([20, null, 39])
     expect(w.sunday.am).toBe(20);
-    expect(w.sunday.pm).toBe(20);
+    expect(w.sunday.pm).toBe((20 + 39) / 2);
+    expect(w.monday.am).toBe(39);
     expect(w.saturday.pm).toBe(39);
 
-    w = new WeeklyData([null, null, 39])
+
+    // first null is none filled and interpolated
+    w = new WeeklyData([null, null, 39, null, 41])
     expect(w.sunday.am).toBe(null);
     expect(w.sunday.pm).toBe(null);
-    expect(w.saturday.pm).toBe(39);
+    expect(w.monday.am).toBe(39);
+    expect(w.monday.pm).toBe(40);
+    expect(w.tuesday.am).toBe(41);
+    expect(w.saturday.pm).toBe(41);
 
     // already return number
     w = new WeeklyData(["20"])
+    expect(w.sunday.am).toBe(20);
     expect(w.saturday.pm).toBe(20);
 
 });
