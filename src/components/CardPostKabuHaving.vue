@@ -13,23 +13,26 @@
           <b-form-group>
             <b-input-group size="sm" prepend="💰" append="ベル">
               <b-form-input
+                v-model="form.valueUriSell"
                 type="number"
                 size="sm"
                 placeholder="???"
-                v-model="form.valueUriSell"
                 :readonly="getIsFormDisabled"
-                @input="onChangedValueUriSell"
                 lazy
                 required
                 min="1"
                 max="999"
+                @input="onChangedValueUriSell"
               />
             </b-input-group>
             <template #label>
               <h6>🐗の販売値</h6>
             </template>
             <template #description>
-              <span class="text-muted small">{{getLoginUserIslandName}}の, 🥬販売値を入力. 値動きの予測に必須.</span>
+              <span class="text-muted small"
+                >{{ getLoginUserIslandName }}の, 🥬販売値を入力.
+                値動きの予測に必須.</span
+              >
             </template>
           </b-form-group>
         </b-col>
@@ -61,9 +64,15 @@
       </b-form-group>
       -->
 
-      <template v-slot:footer v-if="state.bChangedValueByUser">
-        <b-button block type="submit" size="sm" variant="primary" :disabled="getIsFormDisabled">
-          <span>{{getSubmitButtonText}}</span>
+      <template v-if="state.bChangedValueByUser" v-slot:footer>
+        <b-button
+          block
+          type="submit"
+          size="sm"
+          variant="primary"
+          :disabled="getIsFormDisabled"
+        >
+          <span>{{ getSubmitButtonText }}</span>
           <b-spinner v-show="getShowSubmitButtonSpinner" small />
         </b-button>
       </template>
@@ -73,12 +82,12 @@
 
 <script>
 // import vuex functions
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex'
 
 // import date-fns functions
-import format from "date-fns/format";
-import startOfWeek from "date-fns/startOfWeek";
-import ja from "date-fns/locale/ja";
+import format from 'date-fns/format'
+import startOfWeek from 'date-fns/startOfWeek'
+import ja from 'date-fns/locale/ja'
 
 export default {
   data() {
@@ -91,146 +100,146 @@ export default {
         bSubmitting: false,
         bChangedValueByUser: false
       }
-    };
+    }
   },
   computed: {
     ...mapGetters({
-      loginuser: "users/loginuser",
-      kabuValues: "kabuValues/kabuValues",
-      store_bFetchingKabuValues: "kabuValues/bFetchingKabuValues"
+      loginuser: 'users/loginuser',
+      kabuValues: 'kabuValues/kabuValues',
+      store_bFetchingKabuValues: 'kabuValues/bFetchingKabuValues'
     }),
     dateSundayStr() {
-      const sunday = startOfWeek(new Date());
-      let dateStr = format(sunday, "MM/dd (E)", { locale: ja });
-      return dateStr;
+      const sunday = startOfWeek(new Date())
+      const dateStr = format(sunday, 'MM/dd (E)', { locale: ja })
+      return dateStr
     },
     isFetchingAPI() {
       if (!this.state.bMounted) {
-        return true;
+        return true
       } else if (this.store_bFetchingKabuValues) {
-        return true;
+        return true
       }
-      return false;
+      return false
     },
     getSubmitButtonText() {
       if (this.state.bSubmitting) {
-        return "送信中...";
+        return '送信中...'
       } else if (this.isFetchingAPI) {
-        return "通信中...";
+        return '通信中...'
       }
-      return "保存";
+      return '保存'
     },
     getIsFormDisabled() {
       if (this.state.bSubmitting) {
-        return true;
+        return true
       } else if (this.isFetchingAPI) {
-        return true;
+        return true
       }
-      return false;
+      return false
     },
     // is show spinner in submit button
     getShowSubmitButtonSpinner() {
       if (this.state.bSubmitting) {
-        return true;
+        return true
       } else if (this.isFetchingAPI) {
-        return true;
+        return true
       }
-      return false;
+      return false
     },
     // get loginuser island name
     getLoginUserIslandName() {
       if (this.loginuser.islandName) {
-        return this.loginuser.islandName + "島";
+        return this.loginuser.islandName + '島'
       } else {
-        return "島";
+        return '島'
       }
     }
+  },
+  watch: {
+    store_bFetchingKabuValues(val) {
+      if (!val) {
+        if (!this.state.bSubmitting) {
+          // update form.value
+          this.updateFormValue()
+        }
+      }
+    }
+  },
+  mounted() {
+    // fetch KabuValues background
+    this.$store.dispatch('kabuValues/getKabuValues')
+    this.state.bMounted = true
   },
   methods: {
     // user clicked submit button
     async submit(e) {
-      e.preventDefault();
+      e.preventDefault()
 
       // 現在送信処理中なら, return
       if (this.state.bSubmitting) {
-        return;
+        return
       } else {
-        this.state.bSubmitting = true;
+        this.state.bSubmitting = true
       }
 
       // GoogleSpleadSheetに送信
       // loginUserIdが取得できなければ, やめる
-      const loginuserId = this.loginuser.id;
+      const loginuserId = this.loginuser.id
       if (!loginuserId) {
         // not loggined
-        this.state.bSubmitting = false;
-        return;
+        this.state.bSubmitting = false
+        return
       }
 
       // ウリの販売価格を更新
       // 日曜日のAMの部分を使用する
-      const thisSunday = startOfWeek(new Date());
+      const thisSunday = startOfWeek(new Date())
       await this.$store.dispatch({
-        type: "kabuValues/postKabuValue",
+        type: 'kabuValues/postKabuValue',
         date: thisSunday,
         isPm: false, // 常にAM
         userId: loginuserId,
         value: this.form.valueUriSell
-      });
+      })
 
       // ユーザーの購入情報を更新
       // NOT_IMPLEMENTED
 
       // すべて成功していたら, Toastを表示する
-      this.$bvToast.toast("保存しました!", {
-        title: "Saved!",
-        variant: "success",
+      this.$bvToast.toast('保存しました!', {
+        title: 'Saved!',
+        variant: 'success',
         autoHideDelay: 2000
-      });
+      })
 
       // 投稿後に, stateを初期に戻す
-      this.state.bSubmitting = false;
-      this.state.bChangedValueByUser = false;
+      this.state.bSubmitting = false
+      this.state.bChangedValueByUser = false
     },
     // データベース更新後に, フォームを更新する関数
     // mountedの最後に呼ばれる
     updateFormValue() {
       if (this.isFetchingAPI) {
-        return;
+        return
       }
 
       // generate kabuValue-id from current time
-      const thisSunday = startOfWeek(new Date());
-      const dateForId = format(thisSunday, "yyyyMMdd");
-      const id = dateForId + "-0-" + String(this.loginuser.id);
+      const thisSunday = startOfWeek(new Date())
+      const dateForId = format(thisSunday, 'yyyyMMdd')
+      const id = dateForId + '-0-' + String(this.loginuser.id)
 
       if (this.kabuValues[id]) {
         // set to prev value
-        this.form.valueUriSell = this.kabuValues[id].value;
+        this.form.valueUriSell = this.kabuValues[id].value
       } else {
         // set to default: null
-        this.form.valueUriSell = null;
+        this.form.valueUriSell = null
       }
     },
     // ユーザー入力により, カブ値が変更されたときのコールバック
     onChangedValueUriSell() {
-      this.state.bChangedValueByUser = true;
-    }
-  },
-  mounted() {
-    // fetch KabuValues background
-    this.$store.dispatch("kabuValues/getKabuValues");
-    this.state.bMounted = true;
-  },
-  watch: {
-    store_bFetchingKabuValues: function(val) {
-      if (!val) {
-        if (!this.state.bSubmitting) {
-          // update form.value
-          this.updateFormValue();
-        }
-      }
+      this.state.bChangedValueByUser = true
     }
   }
-};
+}
 </script>

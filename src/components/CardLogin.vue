@@ -5,7 +5,12 @@
       <b-form-row>
         <b-col cols="12" sm="6">
           <b-form-group size="sm">
-            <b-form-input v-model="form.name" size="sm" required placeholder="キャラクターの名前を入力" />
+            <b-form-input
+              v-model="form.name"
+              size="sm"
+              required
+              placeholder="キャラクターの名前を入力"
+            />
             <template #description>
               <ul class="small ml-n3 mt-2">
                 <li>スプレッドシートに登録した名前でログイン</li>
@@ -15,7 +20,9 @@
           </b-form-group>
         </b-col>
         <b-col cols="12" sm="6">
-          <b-button size="sm" block type="submit" variant="primary">ログイン</b-button>
+          <b-button size="sm" block type="submit" variant="primary"
+            >ログイン</b-button
+          >
         </b-col>
       </b-form-row>
     </b-form>
@@ -23,61 +30,61 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex'
 
 export default {
   data() {
     return {
       form: {
-        name: ""
+        name: ''
       }
-    };
+    }
   },
   computed: {
     ...mapGetters({
-      loginuser: "users/loginuser"
+      loginuser: 'users/loginuser'
     })
   },
   methods: {
     login(e) {
-      e.preventDefault();
+      e.preventDefault()
 
       // get form params
-      const inName = this.form.name;
+      const inName = this.form.name
 
       const promise = this.$store.dispatch({
-        type: "users/loginUseName",
+        type: 'users/loginUseName',
         name: inName
-      });
-      promise.then(r => {
+      })
+      promise.then((r) => {
         if (r) {
           // login success
 
           // create toast
-          this.$bvToast.toast("こんにちは " + this.loginuser.name + "さん", {
-            title: "Success to login!",
-            variant: "success",
+          this.$bvToast.toast('こんにちは ' + this.loginuser.name + 'さん', {
+            title: 'Success to login!',
+            variant: 'success',
             autoHideDelay: 2000
-          });
+          })
 
           // userクエリを追加
-          let query = { ...this.$route.query };
-          query["user"] = this.loginuser.id;
+          const query = { ...this.$route.query }
+          query.user = this.loginuser.id
           this.$router.replace(
-            { query: query },
+            { query },
             () => {},
             () => {}
-          );
+          )
         } else {
           // create toast
-          this.$bvToast.toast("ログインに失敗!", {
-            title: "Failed to login!",
-            variant: "danger",
+          this.$bvToast.toast('ログインに失敗!', {
+            title: 'Failed to login!',
+            variant: 'danger',
             autoHideDelay: 2000
-          });
+          })
         }
-      });
+      })
     }
   }
-};
+}
 </script>
