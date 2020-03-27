@@ -48,11 +48,7 @@ export const mutations = {
             user.color = '#006633'
             break
           default:
-            let rand = Math.floor(
-              Math.abs(Math.sin(user.id) * 16777215) % 16777215
-            )
-            rand = (rand + 16777215) / 2
-            user.color = '#' + rand.toString(16)
+            user.color = '#555'
         }
 
         state.users = { ...state.users, [user.id]: user }
@@ -114,10 +110,10 @@ export const actions = {
   },
 
   loginUseName({ state, commit }, { name }) {
-    for (const user_id in state.users) {
-      const user = state.users[user_id]
+    for (const userId in state.users) {
+      const user = state.users[userId]
       // check username
-      if (name == user.name) {
+      if (name === user.name) {
         commit('set_loginuser', user)
         return true
       }

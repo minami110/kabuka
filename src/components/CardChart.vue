@@ -79,7 +79,7 @@ export default {
               ticks: {
                 // AM , PM を除外して, 日付のみ表示する
                 userCallback(label, index, labels) {
-                  if (index % 2 == 0) {
+                  if (index % 2 === 0) {
                     return label.split(' ')[0]
                   }
                 }
@@ -194,14 +194,14 @@ export default {
 
       // ユーザーごとにデータセットを作成
       result.datasets = []
-      for (const user_id in kabuValueEachUsers) {
-        const user = this.users[user_id]
+      for (const userId in kabuValueEachUsers) {
+        const user = this.users[userId]
 
         // ラベルの数だけデータを作成する
         const __d = []
         for (let i = 0; i < _labelTotalCount; i++) {
           // もしvalueが存在しなければ, nullを代入する
-          const value = kabuValueEachUsers[user_id][i]
+          const value = kabuValueEachUsers[userId][i]
           if (value) {
             __d.push(value)
           } else {

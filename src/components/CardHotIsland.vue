@@ -331,14 +331,14 @@ export default {
         // 今のTimeインデックスを取得
         const currentTimeIndex = this.get_current_time_index
         const peekdelta = timeIndex - currentTimeIndex
-        const delta_day = Math.floor(peekdelta / 2)
-        const helf_day = peekdelta % 2
-        const peek_date = add(new Date(), {
-          days: delta_day,
-          hours: helf_day ? 12 : 0
+        const deltaDay = Math.floor(peekdelta / 2)
+        const helfDay = peekdelta % 2
+        const peekDate = add(new Date(), {
+          days: deltaDay,
+          hours: helfDay ? 12 : 0
         })
-        const dateStr = format(peek_date, 'M/d (E)')
-        const isPmStr = getHours(peek_date) > 12 ? 'PM' : 'AM'
+        const dateStr = format(peekDate, 'M/d (E)')
+        const isPmStr = getHours(peekDate) > 12 ? 'PM' : 'AM'
         const peekStr = dateStr + ' ' + isPmStr
 
         return peekStr
@@ -366,12 +366,12 @@ export default {
         }
 
         // typeが確定している島だけにする
-        if (pred.movingTypes.length != 1) {
+        if (pred.movingTypes.length !== 1) {
           continue
         }
 
         // ピーク予想が一つの島だけにする
-        if (pred.peeks.length != 1) {
+        if (pred.peeks.length !== 1) {
           continue
         }
 
@@ -386,14 +386,14 @@ export default {
 
         // peekを日付に変更する
         const peekdelta = peek - currentTimeIndex
-        const delta_day = Math.floor(peekdelta / 2)
-        const helf_day = peekdelta % 2
-        const peek_date = add(new Date(), {
-          days: delta_day,
-          hours: helf_day ? 12 : 0
+        const deltaDay = Math.floor(peekdelta / 2)
+        const helfDay = peekdelta % 2
+        const peekDate = add(new Date(), {
+          days: deltaDay,
+          hours: helfDay ? 12 : 0
         })
-        const dateStr = format(peek_date, 'M/d (E)')
-        const isPmStr = getHours(peek_date) > 12 ? 'PM' : 'AM'
+        const dateStr = format(peekDate, 'M/d (E)')
+        const isPmStr = getHours(peekDate) > 12 ? 'PM' : 'AM'
         const peekStr = dateStr + ' ' + isPmStr
 
         // お金の期待価格を取得
@@ -445,14 +445,14 @@ export default {
           // 今のTimeインデックスを取得
           const currentTimeIndex = this.get_current_time_index
           const peekdelta = timeIndex - currentTimeIndex
-          const delta_day = Math.floor(peekdelta / 2)
-          const helf_day = peekdelta % 2
-          const peek_date = add(new Date(), {
-            days: delta_day,
-            hours: helf_day ? 12 : 0
+          const deltaDay = Math.floor(peekdelta / 2)
+          const helfDay = peekdelta % 2
+          const peekDate = add(new Date(), {
+            days: deltaDay,
+            hours: helfDay ? 12 : 0
           })
-          const dateStr = format(peek_date, 'M/d (E)')
-          const isPmStr = getHours(peek_date) > 12 ? 'PM' : 'AM'
+          const dateStr = format(peekDate, 'M/d (E)')
+          const isPmStr = getHours(peekDate) > 12 ? 'PM' : 'AM'
           const peekStr = dateStr + ' ' + isPmStr
 
           return peekStr
@@ -507,7 +507,7 @@ export default {
       }
     }
   },
-  async mounted() {
+  mounted() {
     this.$store.dispatch('kabuValues/getKabuValues')
   },
   methods: {
@@ -573,14 +573,12 @@ export default {
 
       // ユーザーごとにデータセットを作成
       const _preds = {}
-      for (const user_id in kabuValueEachUsers) {
-        const user = this.users[user_id]
-
+      for (const userId in kabuValueEachUsers) {
         // ラベルの数だけデータを作成する
         const __d = []
         for (let i = 0; i < _labelTotalCount; i++) {
           // もしvalueが存在しなければ, nullを代入する
-          const value = kabuValueEachUsers[user_id][i]
+          const value = kabuValueEachUsers[userId][i]
           if (value) {
             __d.push(value)
           } else {
@@ -590,8 +588,8 @@ export default {
 
         const timeIndex = this.get_current_time_index
 
-        const pred = Detector.detect_v_tobimori(__d, timeIndex)
-        _preds[user_id] = pred
+        const pred = Detector.Detect(__d, timeIndex)
+        _preds[userId] = pred
       }
 
       this.preds = _preds

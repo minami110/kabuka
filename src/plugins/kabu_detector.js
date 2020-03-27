@@ -52,7 +52,7 @@ export class WeeklyData {
         result.push(null)
       }
     }
-    return this._fill_blank_data(result)
+    return this._fillBlankData(result)
   }
 
   // 未入力のデータを穴埋めする関数
@@ -61,8 +61,8 @@ export class WeeklyData {
   // [1, null, 3, null] -> [1, 2, 3, 3]
   // [null, 2, null] -> [null, 2, 2]
   // [null, null] -> [null, null]
-  _fill_blank_data(datas) {
-    const data_length = datas.length
+  _fillBlankData(datas) {
+    const dataLength = datas.length
     const result = []
     for (const index in datas) {
       const data = datas[index]
@@ -72,38 +72,38 @@ export class WeeklyData {
         // 2 + 2 * 1 = 4 が求まる
         // 前も全てnullのばあいは, nullとする
         // 後ろがnullのばあいは, 前の値をそのまま使用する
-        let prev_data = null
-        let prev_i = Number(index) - 1
-        for (; prev_i >= 0; prev_i--) {
-          const _d = datas[prev_i]
+        let prevData = null
+        let prevIndex = Number(index) - 1
+        for (; prevIndex >= 0; prevIndex--) {
+          const _d = datas[prevIndex]
           if (_d) {
-            prev_data = _d
+            prevData = _d
             break
           }
         }
-        if (!prev_data) {
+        if (!prevData) {
           result.push(null)
           continue
         }
 
-        let next_data = null
-        let next_i = Number(index) + 1
-        for (; next_i < data_length; next_i++) {
-          const _d = datas[next_i]
+        let nextData = null
+        let nextIndex = Number(index) + 1
+        for (; nextIndex < dataLength; nextIndex++) {
+          const _d = datas[nextIndex]
           if (_d) {
-            next_data = _d
+            nextData = _d
             break
           }
         }
-        if (!next_data) {
-          result.push(prev_data)
+        if (!nextData) {
+          result.push(prevData)
           continue
         }
 
-        const index_delta = next_i - prev_i
-        const value_delta = (next_data - prev_data) / index_delta
-        const interp_data = prev_data + (Number(index) - prev_i) * value_delta
-        result.push(interp_data)
+        const indexDelta = nextIndex - prevIndex
+        const valueDelta = (nextData - prevData) / indexDelta
+        const interpDelta = prevData + (Number(index) - prevIndex) * valueDelta
+        result.push(interpDelta)
       } else {
         // データが存在する場合は, そのまま使用する
         result.push(data)
@@ -191,13 +191,12 @@ export class WeeklyData {
       return 0
     }
 
-    const sunday_am = this.sunday.am
-    const target_data = this.getData(timeIndex)
-    if (!target_data) {
+    const targetData = this.getData(timeIndex)
+    if (!targetData) {
       return 0
     }
 
-    return target_data / sunday_am
+    return targetData / this.sunday.am
   }
 
   // 指定された時間が入力されていたかどうか
@@ -276,7 +275,12 @@ export class Prediction {
     this.movingTypes = []
     // update
     for (const type of typeList) {
-      if (type == 'wave' || type == 'poor' || type == 'P3' || type == 'P4') {
+      if (
+        type === 'wave' ||
+        type === 'poor' ||
+        type === 'P3' ||
+        type === 'P4'
+      ) {
         this.movingTypes.push(type)
       }
     }
@@ -299,9 +303,9 @@ export class Prediction {
   }
 
   getMinExpectedValue() {
-    if (this.movingTypes.toString() == ['P4'].toString()) {
+    if (this.movingTypes.toString() === ['P4'].toString()) {
       return this.sunday_am * 1.5
-    } else if (this.movingTypes.toString() == ['P3'].toString()) {
+    } else if (this.movingTypes.toString() === ['P3'].toString()) {
       return this.sunday_am * 2
     } else {
       return null
@@ -309,9 +313,9 @@ export class Prediction {
   }
 
   getMaxExpectedValue() {
-    if (this.movingTypes.toString() == ['P4'].toString()) {
+    if (this.movingTypes.toString() === ['P4'].toString()) {
       return this.sunday_am * 2
-    } else if (this.movingTypes.toString() == ['P3'].toString()) {
+    } else if (this.movingTypes.toString() === ['P3'].toString()) {
       return this.sunday_am * 6
     } else {
       return null
@@ -323,7 +327,7 @@ export class Prediction {
 export class Detector {
   // とびだせどうぶつの森の月曜日AM予測モデル
   // Type: A, B, C, D に分岐する
-  static get_type_tobimori_monday_am(week, result, currentTimeIndex) {
+  static _detectMondayAm(week, result, currentTimeIndex) {
     // 月曜AMのデータがなければ, 曖昧値を10加算する
     if (week.isMissing('monday.am')) {
       result.addAdvice('月曜AMのカブ売値を入力すると, 予測精度が上がります.')
@@ -387,7 +391,7 @@ export class Detector {
 
   // とびだせどうぶつの森の月曜日PM予測モデル
   // Type: A, B, C-1, C-2, D に分岐する
-  static get_type_tobimori_monday_pm(week, result, typeMondayAm) {
+  static _detectMondayPm(week, result, typeMondayAm) {
     // 月曜PMのデータがなければ, 曖昧値を5加算する
     if (week.isMissing('monday.pm')) {
       result.addAdvice('月曜PMのカブ売値を入力すると, 予測精度が上がります.')
@@ -398,18 +402,18 @@ export class Detector {
     // 月曜AMでType-B型のスコープ
     // 波形, 4期型に確定する
     // 月曜PM ~ 火曜PMの間に確定する
-    if (typeMondayAm == 'B') {
+    if (typeMondayAm === 'B') {
       // 月曜AM -> 月曜PM の値動きを確認する
       // 同値, または8ベル以上の値下がりなら, 波型の確定
-      const delta_mon = week.monday.am - week.monday.pm
-      if (delta_mon == 0 || delta_mon > 8) {
+      const deltaValue = week.monday.am - week.monday.pm
+      if (deltaValue === 0 || deltaValue > 8) {
         // 月曜PMに, 波型の確定!
         result.setMovingTypes(['wave'])
         result.clearPeek()
         return 'A'
       }
       // もし値上がりしていたら
-      else if (delta_mon < 0) {
+      else if (deltaValue < 0) {
         if (week.magnitude('monday.pm') < 0.9) {
           // 月曜PMに, 波型の確定!
           result.setMovingTypes(['wave'])
@@ -443,7 +447,7 @@ export class Detector {
     // 月曜AMでType-C型のスコープ
     // ジリ貧型, 3期型, 4期型に確定する
     // 火曜AM ~ 木曜PM の間に確定する
-    else if (typeMondayAm == 'C') {
+    else if (typeMondayAm === 'C') {
       // 月曜PMに買取値が上がった場合
       // 3期型, 4期型に確定する
       // 火曜AMに確定する
@@ -468,7 +472,7 @@ export class Detector {
     // 月曜AMでType-D型のスコープ
     // 波形か4期型に確定する
     // 月曜PM ~ 火曜AM の間に確定する
-    else if (typeMondayAm == 'D') {
+    else if (typeMondayAm === 'D') {
       if (mag < 0.8) {
         // 月曜PMに, 波型の確定!
         // 波型なのでピークはなし
@@ -489,7 +493,7 @@ export class Detector {
 
   // とびだせどうぶつの森の火曜日AM予測モデル
   // Type:A, B に分岐する
-  static get_type_tobimori_tuesday_am(week, result, typeMondayPm, dayIndex) {
+  static _detectTuesdayAm(week, result, typeMondayPm, dayIndex) {
     // 火曜AMのデータがなければ, 曖昧値を5加算する
     if (week.isMissing('tuesday.am')) {
       result.addAdvice('火曜AMのカブ売値を入力すると, 予測精度が上がります.')
@@ -500,7 +504,7 @@ export class Detector {
 
     // 月曜PMでType-B型のスコープ
     // wave, P3, P4 に着地する
-    if (typeMondayPm == 'B') {
+    if (typeMondayPm === 'B') {
       if (mag < 0.9) {
         // 火曜AMに, 波型の確定
         result.setMovingTypes(['wave'])
@@ -518,7 +522,7 @@ export class Detector {
     }
 
     // 月曜PMでType-C-1のスコープ
-    else if (typeMondayPm == 'C-1') {
+    else if (typeMondayPm === 'C-1') {
       if (mag < 1.4) {
         // 4期型で確定!
         // 水曜AM(6)にピークを迎える
@@ -532,7 +536,7 @@ export class Detector {
         result.setPeek(5)
         return 'A'
       }
-    } else if (typeMondayPm == 'C-2') {
+    } else if (typeMondayPm === 'C-2') {
       // 月曜PMに買取値が下がった場合
       // 木曜PMまで値を確認する
       // 値上がり(変調)すると, 3期型, 4期型が確定
@@ -541,8 +545,8 @@ export class Detector {
       // 外部の関数を最期で呼ぶ
       // 火曜AM現在は4
 
-      return Detector.check_poor(week, result, 4, dayIndex)
-    } else if (typeMondayPm == 'D') {
+      return Detector._checkPoor(week, result, 4, dayIndex)
+    } else if (typeMondayPm === 'D') {
       if (mag < 1.4) {
         // 火曜AMに 波型で確定!
         result.setMovingTypes(['wave'])
@@ -562,7 +566,7 @@ export class Detector {
 
   // とびだせどうぶつの森の火曜日PM予測モデル
   // Type:A に収束
-  static get_type_tobimori_tuesday_pm(week, result, typeTuesdayAm) {
+  static _detectTuesdayPm(week, result, typeTuesdayAm) {
     // 火曜PMのデータがなければ, 曖昧値を5加算する
     if (week.isMissing('tuesday.pm')) {
       result.addAdvice('火曜PMのカブ売値を入力すると, 予測精度が上がります.')
@@ -571,7 +575,7 @@ export class Detector {
 
     // 火曜AMでType-B型のスコープ
     // ここで確定する
-    if (typeTuesdayAm == 'B') {
+    if (typeTuesdayAm === 'B') {
       if (week.magnitude('tuesday.pm') < 1.4) {
         // 火曜PMに, 波型の確定
         result.setMovingTypes(['wave'])
@@ -595,7 +599,7 @@ export class Detector {
   }
 
   // とびだせどうぶつの森の, C-2パターン検証再帰モデル
-  static check_poor(week, result, currentDayIndex, limitDayIndex) {
+  static _checkPoor(week, result, currentDayIndex, limitDayIndex) {
     // 木曜PMを超えたらジリ貧型が決定する
     if (currentDayIndex > 8) {
       result.setMovingTypes(['poor'])
@@ -609,9 +613,9 @@ export class Detector {
     }
 
     // 現在の値と, 前回の値を比較する
-    const curr_value = week.getData(currentDayIndex)
-    const prev_value = week.getData(currentDayIndex - 1)
-    const bInclease = curr_value - prev_value > 0
+    const currValue = week.getData(currentDayIndex)
+    const prevValue = week.getData(currentDayIndex - 1)
+    const bInclease = currValue - prevValue > 0
 
     // 未入力の値があれば, amiguousを増加
     if (week.isMissingByIndex(currentDayIndex)) {
@@ -625,8 +629,8 @@ export class Detector {
     // 値上がりしていたら, P3, P4の判定に飛ぶ
     if (bInclease) {
       // 更に次の日に判定するので, limitを超えていないかの確認をする
-      const next_timeIndex = currentDayIndex + 1
-      if (next_timeIndex > limitDayIndex) {
+      const nextTimeIndex = currentDayIndex + 1
+      if (nextTimeIndex > limitDayIndex) {
         // 値動きが, P3かP4に確定!
         result.setMovingTypes(['P3', 'P4'])
 
@@ -639,26 +643,26 @@ export class Detector {
         result.setPeeks([p3peek, p4peek])
         return 'A'
       } else {
-        const nextmag = week.magnitudeByIndex(next_timeIndex)
+        const nextmag = week.magnitudeByIndex(nextTimeIndex)
         // ここ, 1.43でP4だったことがあるので, 微妙に上げている
         // 1/7 近辺の値かと思われる
         if (nextmag < 1.45) {
           // P4が確定, ピークは2つ次
           result.setMovingTypes(['P4'])
-          result.setPeek(next_timeIndex + 2)
+          result.setPeek(nextTimeIndex + 2)
           return 'A'
         } else {
           // P3が確定, ピークは1つ次
           result.setMovingTypes(['P3'])
-          result.setPeek(next_timeIndex + 1)
+          result.setPeek(nextTimeIndex + 1)
           return 'A'
         }
       }
     }
 
     // 次の日へ再帰する
-    const next_timeIndex = currentDayIndex + 1
-    return Detector.check_poor(week, result, next_timeIndex, limitDayIndex)
+    const nextTimeIndex = currentDayIndex + 1
+    return Detector._checkPoor(week, result, nextTimeIndex, limitDayIndex)
   }
 
   // type-A型のpeekを監視する関数
@@ -675,9 +679,9 @@ export class Detector {
 
     // 変調が起きたかどうかを確認する
     // 現在の値と, 前回の値を比較する
-    const curr_value = week.getData(curentIndex)
-    const prev_value = week.getData(curentIndex - 1)
-    const bInclease = curr_value - prev_value > 0
+    const currValue = week.getData(curentIndex)
+    const prevValue = week.getData(curentIndex - 1)
+    const bInclease = currValue - prevValue > 0
 
     // 未入力の値があれば, amiguousを増加
     if (week.isMissingByIndex(curentIndex)) {
@@ -690,8 +694,8 @@ export class Detector {
       return true
     }
 
-    const next_timeIndex = curentIndex + 1
-    return Detector.checkPeek(week, result, next_timeIndex, limitIndex)
+    const nextTimeIndex = curentIndex + 1
+    return Detector.checkPeek(week, result, nextTimeIndex, limitIndex)
   }
 
   // カブの値動き型の確率を判定する関数
@@ -710,7 +714,7 @@ export class Detector {
   //
   // 戻り地は以下のオブジェクト
   //
-  static detect_v_tobimori(values, currentTimeIndex) {
+  static Detect(values, currentTimeIndex) {
     const week = new WeeklyData(values)
     const result = new Prediction()
 
@@ -729,12 +733,8 @@ export class Detector {
       return result
     }
     // 月曜AMの予測モデルを実施, TypeAならreturn
-    const type_monday_am = Detector.get_type_tobimori_monday_am(
-      week,
-      result,
-      currentTimeIndex
-    )
-    if (type_monday_am == 'A') {
+    const typeMonAm = Detector._detectMondayAm(week, result, currentTimeIndex)
+    if (typeMonAm === 'A') {
       return result
     }
 
@@ -742,12 +742,8 @@ export class Detector {
     if (currentTimeIndex < 3) {
       return result
     }
-    const type_monday_pm = Detector.get_type_tobimori_monday_pm(
-      week,
-      result,
-      type_monday_am
-    )
-    if (type_monday_pm == 'A') {
+    const typeMonPm = Detector._detectMondayPm(week, result, typeMonAm)
+    if (typeMonPm === 'A') {
       return result
     }
 
@@ -755,13 +751,13 @@ export class Detector {
     if (currentTimeIndex < 4) {
       return result
     }
-    const type_tuesday_am = Detector.get_type_tobimori_tuesday_am(
+    const typeTueAm = Detector._detectTuesdayAm(
       week,
       result,
-      type_monday_pm,
+      typeMonPm,
       currentTimeIndex
     )
-    if (type_tuesday_am == 'A') {
+    if (typeTueAm === 'A') {
       return result
     }
 
@@ -769,12 +765,8 @@ export class Detector {
     if (currentTimeIndex < 5) {
       return result
     }
-    const type_tuesday_pm = Detector.get_type_tobimori_tuesday_pm(
-      week,
-      result,
-      type_tuesday_am
-    )
-    if (type_tuesday_pm == 'A') {
+    const typeTuePm = Detector._detectTuesdayPm(week, result, typeTueAm)
+    if (typeTuePm === 'A') {
       return result
     }
 

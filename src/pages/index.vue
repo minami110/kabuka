@@ -63,8 +63,8 @@ import CardChart from '~/components/CardChart'
 import CardHotIsland from '~/components/CardHotIsland'
 
 // import package info
-import package_info from '~/package.json'
-import build_info from '~/build_info.json'
+import packageInfo from '~/package.json'
+import buildInfo from '~/build_info.json'
 
 export default {
   components: {
@@ -85,7 +85,7 @@ export default {
       loginuser: 'users/loginuser'
     }),
     application_version() {
-      return package_info.version + '.' + build_info.number
+      return packageInfo.version + '.' + buildInfo.number
     }
   },
   async mounted() {

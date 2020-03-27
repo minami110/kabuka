@@ -15,10 +15,3 @@ module.exports = {
     '<rootDir>/pages/**/*.vue'
   ]
 }
-
-
-
-
-
-
-

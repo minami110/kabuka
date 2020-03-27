@@ -28,26 +28,26 @@ test('WeeklyData::construct', () => {
 })
 
 test('WeeklyData::magnitude', () => {
-  const sunday_am = 134
-  let w = new WeeklyData([sunday_am])
+  const SundayAm = 134
+  let w = new WeeklyData([SundayAm])
 
   expect(w.magnitude('monday.am')).toBe(1)
   expect(w.magnitude('saturday.pm')).toBe(1)
 
-  w = new WeeklyData([sunday_am, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+  w = new WeeklyData([SundayAm, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
 
-  expect(w.magnitude('monday.am')).toBe(3 / sunday_am)
-  expect(w.magnitude('monday.pm')).toBe(4 / sunday_am)
-  expect(w.magnitude('tuesday.am')).toBe(5 / sunday_am)
-  expect(w.magnitude('tuesday.pm')).toBe(6 / sunday_am)
-  expect(w.magnitude('wednesday.am')).toBe(7 / sunday_am)
-  expect(w.magnitude('wednesday.pm')).toBe(8 / sunday_am)
-  expect(w.magnitude('thursday.am')).toBe(9 / sunday_am)
-  expect(w.magnitude('thursday.pm')).toBe(10 / sunday_am)
-  expect(w.magnitude('friday.am')).toBe(11 / sunday_am)
-  expect(w.magnitude('friday.pm')).toBe(12 / sunday_am)
-  expect(w.magnitude('saturday.am')).toBe(13 / sunday_am)
-  expect(w.magnitude('saturday.pm')).toBe(14 / sunday_am)
+  expect(w.magnitude('monday.am')).toBe(3 / SundayAm)
+  expect(w.magnitude('monday.pm')).toBe(4 / SundayAm)
+  expect(w.magnitude('tuesday.am')).toBe(5 / SundayAm)
+  expect(w.magnitude('tuesday.pm')).toBe(6 / SundayAm)
+  expect(w.magnitude('wednesday.am')).toBe(7 / SundayAm)
+  expect(w.magnitude('wednesday.pm')).toBe(8 / SundayAm)
+  expect(w.magnitude('thursday.am')).toBe(9 / SundayAm)
+  expect(w.magnitude('thursday.pm')).toBe(10 / SundayAm)
+  expect(w.magnitude('friday.am')).toBe(11 / SundayAm)
+  expect(w.magnitude('friday.pm')).toBe(12 / SundayAm)
+  expect(w.magnitude('saturday.am')).toBe(13 / SundayAm)
+  expect(w.magnitude('saturday.pm')).toBe(14 / SundayAm)
 
   w = new WeeklyData()
   expect(w.magnitude('monday.am')).toBe(0)
