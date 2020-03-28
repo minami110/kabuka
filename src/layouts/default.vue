@@ -1,8 +1,24 @@
 <template>
   <div>
-    <nuxt />
+    <NavbarKabuka />
+    <b-container class="mt-3 mb-3">
+      <nuxt />
+      <Footer class="mt-3" />
+    </b-container>
   </div>
 </template>
+
+<script>
+import NavbarKabuka from '~/components/NavbarKabuka'
+import Footer from '~/components/Footer'
+
+export default {
+  components: {
+    NavbarKabuka,
+    Footer
+  }
+}
+</script>
 
 <style>
 html {
@@ -22,34 +38,5 @@ html {
 *:after {
   box-sizing: border-box;
   margin: 0;
-}
-
-.button--green {
-  display: inline-block;
-  border-radius: 4px;
-  border: 1px solid #3b8070;
-  color: #3b8070;
-  text-decoration: none;
-  padding: 10px 30px;
-}
-
-.button--green:hover {
-  color: #fff;
-  background-color: #3b8070;
-}
-
-.button--grey {
-  display: inline-block;
-  border-radius: 4px;
-  border: 1px solid #35495e;
-  color: #35495e;
-  text-decoration: none;
-  padding: 10px 30px;
-  margin-left: 15px;
-}
-
-.button--grey:hover {
-  color: #fff;
-  background-color: #35495e;
 }
 </style>

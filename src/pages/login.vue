@@ -1,44 +1,11 @@
 <template>
-  <b-row v-if="bFetchingData">
-    <b-col cols="12" class="text-center">
-      <strong>スプレッドシートにアクセス中...</strong>
-      <b-spinner small label="Spinning" />
-    </b-col>
-  </b-row>
-
-  <b-row v-else>
-    <!-- ログイン状態に応じて, 表示するカードを変更 -->
+  <b-row>
     <b-col cols="12">
       <!-- loginuser.id がなければ, ログインカードを表示 -->
-      <card-login v-if="!loginuser.id" />
-
-      <!-- loginuser.id があれば, ユーザーカードを表示 -->
-      <card-user
-        v-else
-        @logout="makeToast('logout!', 'Succeed to logout', 'success')"
-      />
-    </b-col>
-
-    <b-col v-if="loginuser.id" cols="12" class="mt-3">
-      <card-hot-island />
-    </b-col>
-
-    <b-col v-if="loginuser.id" cols="12" class="mt-3">
-      <card-chart />
-    </b-col>
-
-    <b-col v-if="loginuser.id" cols="12" class="mt-3">
-      <card-links />
+      <card-login />
     </b-col>
   </b-row>
 </template>
-
-<style>
-input,
-select {
-  font-size: 16px !important;
-}
-</style>
 
 <script>
 // import vuex
@@ -46,18 +13,14 @@ import { mapGetters } from 'vuex'
 
 // import components
 import CardLogin from '~/components/CardLogin'
-import CardUser from '~/components/CardUser'
-import CardLinks from '~/components/CardLinks'
-import CardChart from '~/components/CardChart'
-import CardHotIsland from '~/components/CardHotIsland'
+
+// import package info
+import packageInfo from '~/package.json'
+import buildInfo from '~/build_info.json'
 
 export default {
   components: {
-    CardLogin,
-    CardUser,
-    CardLinks,
-    CardChart,
-    CardHotIsland
+    CardLogin
   },
   data() {
     return {
@@ -68,7 +31,10 @@ export default {
     ...mapGetters({
       users: 'users/users',
       loginuser: 'users/loginuser'
-    })
+    }),
+    application_version() {
+      return packageInfo.version + '.' + buildInfo.number
+    }
   },
   async mounted() {
     // fetch users data from spleadsheet

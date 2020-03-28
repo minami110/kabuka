@@ -600,8 +600,8 @@ export class Detector {
 
   // とびだせどうぶつの森の, C-2パターン検証再帰モデル
   static _checkPoor(week, result, currentDayIndex, limitDayIndex) {
-    // 木曜PMを超えたらジリ貧型が決定する
-    if (currentDayIndex > 8) {
+    // 金曜AM(10)を超えたらジリ貧型が決定する
+    if (currentDayIndex >= 10) {
       result.setMovingTypes(['poor'])
       result.clearPeek()
       return 'A'
@@ -617,17 +617,22 @@ export class Detector {
     const prevValue = week.getData(currentDayIndex - 1)
     const bInclease = currValue - prevValue > 0
 
-    // 未入力の値があれば, amiguousを増加
+    // 未入力の値があれば, amiguousを常に増加
     if (week.isMissingByIndex(currentDayIndex)) {
       result.addAmbiguousWeight(2)
     }
 
-    if (week.isMissingByIndex(currentDayIndex - 1)) {
-      result.addAmbiguousWeight(2)
-    }
-
-    // 値上がりしていたら, P3, P4の判定に飛ぶ
+    // 値上がり(変調)していたら, P3, P4の判定に飛ぶ
     if (bInclease) {
+      // 変調が確定したタイミングの判定が未入力の値であれば
+      // 厳密な変調タイミングがわからないので, ambiguousを追加する
+      if (week.isMissingByIndex(currentDayIndex)) {
+        result.addAmbiguousWeight(5)
+        result.addAdvice(
+          '値上がりのタイミングが厳密に特定できなかったので, ピークがずれる可能性があります'
+        )
+      }
+
       // 更に次の日に判定するので, limitを超えていないかの確認をする
       const nextTimeIndex = currentDayIndex + 1
       if (nextTimeIndex > limitDayIndex) {
@@ -667,8 +672,8 @@ export class Detector {
 
   // type-A型のpeekを監視する関数
   static checkPeek(week, result, curentIndex, limitIndex) {
-    // 木曜PMを超えた変調は起きないので, return
-    if (curentIndex > 8) {
+    // 金曜AM(10)を超えた変調は起きないので, return
+    if (curentIndex >= 10) {
       return true
     }
 
@@ -685,11 +690,20 @@ export class Detector {
 
     // 未入力の値があれば, amiguousを増加
     if (week.isMissingByIndex(curentIndex)) {
-      result.addAmbiguousWeight(5)
+      result.addAmbiguousWeight(2)
     }
 
     // 値上がりしていたら, 変調の確認, 3つ後にpeekを設定する
     if (bInclease) {
+      // 変調が確定したタイミングの判定が未入力の値であれば
+      // 厳密な変調タイミングがわからないので, ambiguousを追加する
+      if (week.isMissingByIndex(curentIndex)) {
+        result.addAmbiguousWeight(5)
+        result.addAdvice(
+          '値上がりのタイミングが厳密に特定できなかったので, ピークがずれる可能性があります'
+        )
+      }
+
       result.setPeek(curentIndex + 3)
       return true
     }

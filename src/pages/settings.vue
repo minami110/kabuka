@@ -51,6 +51,10 @@ import CardLinks from '~/components/CardLinks'
 import CardChart from '~/components/CardChart'
 import CardHotIsland from '~/components/CardHotIsland'
 
+// import package info
+import packageInfo from '~/package.json'
+import buildInfo from '~/build_info.json'
+
 export default {
   components: {
     CardLogin,
@@ -68,7 +72,10 @@ export default {
     ...mapGetters({
       users: 'users/users',
       loginuser: 'users/loginuser'
-    })
+    }),
+    application_version() {
+      return packageInfo.version + '.' + buildInfo.number
+    }
   },
   async mounted() {
     // fetch users data from spleadsheet

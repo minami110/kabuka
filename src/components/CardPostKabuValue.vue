@@ -4,11 +4,13 @@
       <template v-slot:header>
         <h5 class="mb-0">
           <strong>{{ formDateStr }}</strong>
-          <span v-if="form.isPm">
-            <b-badge pill variant="warning">PM</b-badge>
-          </span>
-          <span v-else>
-            <b-badge pill variant="success">AM</b-badge>
+          <span v-show="!isDateSunday">
+            <span v-show="form.isPm">
+              <b-badge pill variant="warning">PM</b-badge>
+            </span>
+            <span v-show="!form.isPm">
+              <b-badge pill variant="success">AM</b-badge>
+            </span>
           </span>
           <span class="align-bottom">の🥬</span>
         </h5>
@@ -18,7 +20,7 @@
         <!-- カブ値入力フィールド -->
         <b-col cols="12">
           <b-form-group>
-            <b-input-group prepend="💰" append="ベル" size="sm" class="mr-2">
+            <b-input-group prepend="💰" append="ベル" size="sm">
               <b-input
                 v-model="form.value"
                 type="number"
@@ -33,27 +35,25 @@
               />
             </b-input-group>
             <template #label>
-              <h6>🐻の買取値</h6>
+              <h6>{{ getLabelKabuValue }}</h6>
             </template>
             <template #description>
-              <span class="text-muted small"
-                >{{ getLoginUserIslandName }}の, 🥬買取値を入力</span
-              >
+              <span class="text-muted small">{{ getDescKabuValue }}</span>
             </template>
           </b-form-group>
         </b-col>
 
         <b-col cols="12">
-          <a
+          <b-link
             href="#"
             class="text-muted"
             style="font-size:0.6rem"
-            @click="openDateForm"
+            @click="state.bShowDateForm = !state.bShowDateForm"
           >
             <span v-show="!state.bShowDateForm">+</span>
             <span v-show="state.bShowDateForm">-</span>
             <span>日付の指定</span>
-          </a>
+          </b-link>
         </b-col>
 
         <!-- 過去のデータを更新する場合は, 日付フィールドを表示 -->
@@ -102,6 +102,14 @@ import isBefore from 'date-fns/isBefore'
 import isSunday from 'date-fns/isSunday'
 
 export default {
+  props: {
+    now: {
+      type: Date,
+      default: () => {
+        return new Date()
+      }
+    }
+  },
   data() {
     return {
       form: {
@@ -110,7 +118,6 @@ export default {
         isPm: null
       },
       state: {
-        date: null,
         bSubmitting: true,
         bShowDateForm: false,
         bMounted: false,
@@ -123,6 +130,7 @@ export default {
       }
     }
   },
+
   computed: {
     ...mapGetters({
       loginuser: 'users/loginuser',
@@ -158,8 +166,6 @@ export default {
         return '通信中...'
       } else if (this.state.bSubmitting) {
         return '送信中...'
-      } else if (this.isDateSunday) {
-        return '日曜日は送信できません'
       } else if (this.state.bAlreadyPosted) {
         return '再送信'
       } else {
@@ -170,8 +176,6 @@ export default {
       if (this.isFetchingKabuValues) {
         return true
       } else if (this.state.bSubmitting) {
-        return true
-      } else if (this.isDateSunday) {
         return true
       } else {
         return false
@@ -190,7 +194,23 @@ export default {
       if (this.loginuser.islandName) {
         return this.loginuser.islandName + '島'
       } else {
-        return '島'
+        return 'NoName島'
+      }
+    },
+    getLabelKabuValue() {
+      // カブ値入力inputのラベル, 日曜と平日で切りかえる
+      if (this.isDateSunday) {
+        return '🐗の販売価格'
+      } else {
+        return '🐻の買取価格'
+      }
+    },
+    getDescKabuValue() {
+      // カブ入力inputのDescription, 日曜と平日で切り替える
+      if (this.isDateSunday) {
+        return `${this.getLoginUserIslandName}の🥬販売値を入力. 値動きの予測に必須です.`
+      } else {
+        return `${this.getLoginUserIslandName}の🥬買取価格を入力.`
       }
     }
   },
@@ -211,9 +231,11 @@ export default {
     }
   },
   mounted() {
+    // set form default value
+    this.form.date = this.now
+
     // detect current time
-    const now = new Date()
-    const hours = getHours(now)
+    const hours = getHours(this.now)
     if (hours > 11) {
       this.form.isPm = true
     } else {
@@ -225,7 +247,7 @@ export default {
     this.calender.minDate.setFullYear(2020)
     this.calender.minDate.setMonth(3 - 1)
     this.calender.minDate.setDate(20)
-    this.calender.maxData = now
+    this.calender.maxData = this.now
 
     // fetch KabuValues background
     this.$store.dispatch('kabuValues/getKabuValues')
@@ -241,19 +263,21 @@ export default {
         return
       }
 
-      // generate kabuValue-id from current time
-      const dateForId = format(this.form.date, 'yyyyMMdd')
-      const id =
-        dateForId +
-        '-' +
-        String(Number(this.form.isPm)) +
-        '-' +
-        String(this.loginuser.id)
+      // カブ値データの存在を確認するために, ユニークIDをローカルで作成する
+      let uniqueId = format(this.form.date, 'yyyyMMdd')
+      uniqueId += '-'
+      // 日曜なら常にAMとする
+      if (this.isDateSunday) {
+        uniqueId += '0'
+      } else {
+        uniqueId += String(Number(this.form.isPm))
+      }
+      uniqueId += '-' + String(this.loginuser.id)
 
       // 株価を入力済みの値に変更
-      if (this.kabuValues[id]) {
+      if (this.kabuValues[uniqueId]) {
         // set to prev value
-        this.form.value = this.kabuValues[id].value
+        this.form.value = this.kabuValues[uniqueId].value
         this.state.bAlreadyPosted = true
       } else {
         // set to default: null
@@ -264,10 +288,8 @@ export default {
       // ユーザー入力による変更済みフラグをリセットする
       this.state.bChangedValueByUser = false
     },
-    openDateForm(e) {
-      e.preventDefault()
-      this.state.bShowDateForm = !this.state.bShowDateForm
-    },
+
+    // カブ値を送信する
     async submit(e) {
       e.preventDefault()
 
@@ -277,38 +299,12 @@ export default {
         this.state.bSubmitting = true
       }
 
-      // clear prev state
-      this.state.date = null
-
       // get value from form
       const value = this.form.value
       const date = this.form.date
-      const isPm = this.form.isPm
+      let isPm = this.form.isPm
 
-      // date validation
-      // vailid string format?
-      if (!isValid(date)) {
-        // invalid date string
-        this.state.date = false
-        this.state.bSubmitting = false
-        return
-      }
-
-      // 2020/03/20以前のデータではない?
-      if (isBefore(date, new Date('2020/03/20'))) {
-        this.state.date = false
-        this.state.bSubmitting = false
-        return
-      }
-
-      // 日曜日ではない?
-      if (isSunday(date)) {
-        this.state.date = false
-        this.state.bSubmitting = false
-        return
-      }
-
-      // send date
+      // ログイン中のユーザーIDを取得する
       const loginuserId = this.loginuser.id
       if (!loginuserId) {
         // not loggined
@@ -316,13 +312,34 @@ export default {
         return
       }
 
-      await this.$store.dispatch({
+      // date validation
+      // vailid string format?
+      if (!isValid(date)) {
+        // invalid date string
+        this.state.bSubmitting = false
+        return
+      }
+
+      // 2020/03/20以前のデータではない?
+      if (isBefore(date, new Date('2020/03/20'))) {
+        this.state.bSubmitting = false
+        return
+      }
+
+      // 日曜日ならば, 強制的にAMとする
+      if (isSunday(date)) {
+        isPm = 0
+      }
+
+      // send date
+      const params = {
         type: 'kabuValues/postKabuValue',
         date,
         isPm,
         userId: loginuserId,
         value
-      })
+      }
+      await this.$store.dispatch(params)
 
       // トーストを表示
       this.$bvToast.toast('現在のカブ値を報告', {
