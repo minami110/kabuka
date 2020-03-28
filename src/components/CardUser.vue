@@ -21,43 +21,43 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters } from 'vuex'
 
 // import components
-import CardPostKabuValue from "~/components/CardPostKabuValue";
-import CardPostKabuHaving from "~/components/CardPostKabuHaving";
+import CardPostKabuValue from '~/components/CardPostKabuValue'
+import CardPostKabuHaving from '~/components/CardPostKabuHaving'
 
 export default {
   data() {
-    return {};
+    return {}
   },
   computed: {
     ...mapGetters({
-      loginuser: "users/loginuser"
+      loginuser: 'users/loginuser'
     })
   },
   methods: {
     logout(e) {
-      e.preventDefault();
+      e.preventDefault()
 
       this.$store.dispatch({
-        type: "users/logout"
-      });
+        type: 'users/logout'
+      })
 
       // user queryを削除
-      let query = { ...this.$route.query };
-      delete query["user"];
+      const query = { ...this.$route.query }
+      delete query.user
 
       // logout-eventをemit
-      this.$emit("logout");
+      this.$emit('logout')
 
       // pushではなくreplaceを使用して, historyを残さない
-      this.$router.replace({ query: query });
+      this.$router.replace({ query })
     }
   },
   components: {
     CardPostKabuValue,
     CardPostKabuHaving
   }
-};
+}
 </script>

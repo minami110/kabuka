@@ -11,7 +11,7 @@ git:
 
 branches:
   only:
-  - pre_deploy
+    - pre_deploy
 
 before_install:
   # update npm
@@ -28,8 +28,9 @@ script:
   # start jest test
   # - npm run test --coverage && cat ./coverage/lcov.info | coveralls
   - npm run test
+  - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
   # start build
-  - npm run generate
+  # - npm run generate
 
 deploy:
   provider: pages
