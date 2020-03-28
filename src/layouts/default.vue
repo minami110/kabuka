@@ -1,15 +1,21 @@
 <template>
   <div>
     <NavbarKabuka />
-    <nuxt />
+    <b-container class="mt-3 mb-3">
+      <nuxt />
+      <Footer class="mt-3" />
+    </b-container>
   </div>
 </template>
 
 <script>
 import NavbarKabuka from '~/components/NavbarKabuka'
+import Footer from '~/components/Footer'
+
 export default {
   components: {
-    NavbarKabuka
+    NavbarKabuka,
+    Footer
   }
 }
 </script>

@@ -21,7 +21,7 @@
       <!-- 型が確定している島のリスト -->
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
-      <b-nav class="mt-3" small pills>
+      <b-nav class="mt-3 border-bottom border-secondary" small pills>
         <b-nav-item
           :active="state.tableIndex == 0"
           @click="state.tableIndex = 0"
@@ -71,10 +71,7 @@
         </div>
       </div>
 
-      <div
-        v-show="state.tableIndex == 2"
-        class="text-muted small p-3 border-top border-secondary"
-      >
+      <div v-show="state.tableIndex == 2" class="text-muted small p-3 ">
         <h5 class="mt-1">ピーク</h5>
         <li>一週間のうちで, カブが最高値をつける瞬間</li>
         <li>ピークをすぎると下降しかしないため, ピークに売るのが吉</li>
@@ -177,7 +174,7 @@
           @click="state.showAboutThisTable = !state.showAboutThisTable"
           >+ この表について</b-link
         >
-        <div v-show="state.showAboutThisTable" class="text-muted small">
+        <div v-show="state.showAboutThisTable" class="text-muted small mt-3">
           <ul>
             <li>
               とびだせどうぶつの森の時代のチャートを使用して, カブ買取価格を推定
@@ -188,9 +185,13 @@
               <strong>月曜日AMの🐻買取価格</strong>もなるべくほしい
             </li>
             <li>
-              飛んでいるデータは保管して推定するため,
+              飛んでいるデータは補完して推定するため,
               毎日細かく入力する必要はありません
             </li>
+            <li>
+              抜けているデータが測定に使用された場合, 予測精度が低下します.
+            </li>
+            >
             <li>結果が複数表示されている場合は, 候補がいくつかある状態です</li>
             <li>
               アツいしまは, これからピークが訪れる, 予測精度の高いしまです
