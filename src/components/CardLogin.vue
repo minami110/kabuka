@@ -3,7 +3,7 @@
     <b-card-title>ログイン</b-card-title>
     <b-form @submit="login">
       <b-form-row>
-        <b-col cols="12" sm="6">
+        <b-col cols="12" lg="6">
           <b-form-group size="sm">
             <b-form-input
               v-model="form.name"
@@ -15,11 +15,14 @@
               <ul class="small ml-n3 mt-2">
                 <li>スプレッドシートに登録した名前でログイン</li>
                 <li>ユーザー登録は, スプレッドシートを直接編集</li>
+                <li>
+                  ログイン後のページをブックマークで, 次回以降ログイン不要
+                </li>
               </ul>
             </template>
           </b-form-group>
         </b-col>
-        <b-col cols="12" sm="6">
+        <b-col cols="12" lg="6">
           <b-button size="sm" block type="submit" variant="primary"
             >ログイン</b-button
           >

@@ -1,12 +1,7 @@
 <template>
   <b-card>
     <b-card-title>
-      <div class="d-flex">
-        <h4>{{ loginuser.name }} さん</h4>
-        <div class="small ml-auto">
-          <a href="#" @click="logout">ログアウト</a>
-        </div>
-      </div>
+      <h4>カブ値投稿</h4>
     </b-card-title>
     <b-row>
       <b-col cols="12" md="6">
@@ -21,6 +16,7 @@
 </template>
 
 <script>
+// import vuex
 import { mapGetters } from 'vuex'
 
 // import components
@@ -28,36 +24,24 @@ import CardPostKabuValue from '~/components/CardPostKabuValue'
 import CardPostKabuHaving from '~/components/CardPostKabuHaving'
 
 export default {
+  components: {
+    CardPostKabuValue,
+    CardPostKabuHaving
+  },
   data() {
     return {}
   },
   computed: {
     ...mapGetters({
       loginuser: 'users/loginuser'
-    })
-  },
-  methods: {
-    logout(e) {
-      e.preventDefault()
-
-      this.$store.dispatch({
-        type: 'users/logout'
-      })
-
-      // user queryを削除
-      const query = { ...this.$route.query }
-      delete query.user
-
-      // logout-eventをemit
-      this.$emit('logout')
-
-      // pushではなくreplaceを使用して, historyを残さない
-      this.$router.replace({ query })
+    }),
+    getLoginUserName() {
+      if (this.loginuser) {
+        return this.loginuser.name
+      } else {
+        return ''
+      }
     }
-  },
-  components: {
-    CardPostKabuValue,
-    CardPostKabuHaving
   }
 }
 </script>

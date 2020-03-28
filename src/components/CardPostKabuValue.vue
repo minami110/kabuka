@@ -102,6 +102,14 @@ import isBefore from 'date-fns/isBefore'
 import isSunday from 'date-fns/isSunday'
 
 export default {
+  props: {
+    now: {
+      type: Date,
+      default: () => {
+        return new Date()
+      }
+    }
+  },
   data() {
     return {
       form: {
@@ -123,6 +131,7 @@ export default {
       }
     }
   },
+
   computed: {
     ...mapGetters({
       loginuser: 'users/loginuser',
@@ -212,8 +221,7 @@ export default {
   },
   mounted() {
     // detect current time
-    const now = new Date()
-    const hours = getHours(now)
+    const hours = getHours(this.now)
     if (hours > 11) {
       this.form.isPm = true
     } else {
@@ -225,7 +233,7 @@ export default {
     this.calender.minDate.setFullYear(2020)
     this.calender.minDate.setMonth(3 - 1)
     this.calender.minDate.setDate(20)
-    this.calender.maxData = now
+    this.calender.maxData = this.now
 
     // fetch KabuValues background
     this.$store.dispatch('kabuValues/getKabuValues')

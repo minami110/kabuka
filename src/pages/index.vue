@@ -1,7 +1,5 @@
 <template>
-  <b-container class="mt-3">
-    <h1>kabuka</h1>
-
+  <b-container class="mt-3 mb-3">
     <b-row v-if="bFetchingData">
       <b-col cols="12" class="text-center">
         <strong>スプレッドシートにアクセス中...</strong>
