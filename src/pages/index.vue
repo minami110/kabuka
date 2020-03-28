@@ -24,7 +24,7 @@
     </b-col>
 
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
-      <card-chart :begin-day="new Date(2020, 2, 24)" />
+      <card-chart />
     </b-col>
 
     <b-col v-if="loginuser.id" cols="12" class="mt-3">

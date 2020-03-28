@@ -7,17 +7,11 @@
         <span>{{ beginDayStr }}</span>
         <span>~</span>
         <span>{{ endDayStr }}</span>
-        <span class="small text-muted">(Week: {{ getWeekIndex }})</span>
+        <span class="small text-muted">(W-{{ weekIndex }})</span>
       </h5>
     </b-card-title>
 
-    <div v-if="isFetchingKabuValues">
-      <b-col cols="12" class="text-center">
-        <strong>カブ値のデータを読込中...</strong>
-        <b-spinner small label="Spinning"></b-spinner>
-      </b-col>
-    </div>
-    <div v-else>
+    <div>
       <!-- 型が確定している島のリスト -->
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
@@ -219,12 +213,12 @@ import { mapGetters } from 'vuex'
 
 // import date-fns functions
 import format from 'date-fns/format'
-import startOfWeek from 'date-fns/startOfWeek'
 import add from 'date-fns/add'
 import getDay from 'date-fns/getDay'
 import isAfter from 'date-fns/isAfter'
 import isBefore from 'date-fns/isBefore'
 import getHours from 'date-fns/getHours'
+import addWeeks from 'date-fns/addWeeks'
 import differenceInWeeks from 'date-fns/differenceInWeeks'
 
 //
@@ -232,18 +226,6 @@ import { Detector } from '~/plugins/kabu_detector'
 
 export default {
   components: {},
-  props: {
-    // chartの開始日, デフォルトは今週の日曜日
-    beginDay: {
-      type: Date,
-      default: () => startOfWeek(new Date())
-    },
-    // chartの表示期間(1週間単位)
-    weekCount: {
-      type: Number,
-      default: 1
-    }
-  },
   data() {
     return {
       state: {
@@ -288,33 +270,34 @@ export default {
       users: 'users/users',
       loginuser: 'users/loginuser',
       kabuValues: 'kabuValues/kabuValues',
-      store_bFetchingKabuValues: 'kabuValues/bFetchingKabuValues'
+      weekIndex: 'kabuValues/weekIndex'
     }),
-    getWeekIndex() {
-      return differenceInWeeks(this.beginDay, new Date(2020, 2, 14))
+    beginDay() {
+      return addWeeks(new Date(2020, 2, 15), this.weekIndex)
     },
     beginDayStr() {
+      // weekIndexに基づいて 開始日を求める
       return format(this.beginDay, 'M/d')
     },
     endDayStr() {
-      const day = add(this.beginDay, { days: 7 * this.weekCount - 1 })
-      return format(day, 'M/d')
+      // weekIndexに基づいて 終了日を求める
+      const endDay = addWeeks(new Date(2020, 2, 14), this.weekIndex + 1)
+      return format(endDay, 'M/d')
     },
-    isFetchingKabuValues() {
-      if (this.store_bFetchingKabuValues) {
-        return true
+    get_current_time_index() {
+      // weekIndexが最新週であれば以下を, そうでなければ常に13を返す
+      const ZeroDay = new Date(2020, 2, 15)
+      const now = new Date()
+      const currentWeekIndex = differenceInWeeks(now, ZeroDay)
+      if (currentWeekIndex === this.weekIndex) {
+        const dayid = getDay(new Date()) // 日曜なら0
+        const hour = getHours(new Date())
+        const isPm = hour > 11 ? 1 : 0
+        return dayid * 2 + isPm
       } else {
-        return false
+        return 13
       }
     },
-
-    get_current_time_index() {
-      const dayid = getDay(new Date()) // 日曜なら0
-      const hour = getHours(new Date())
-      const isPm = hour > 11 ? 1 : 0
-      return dayid * 2 + isPm
-    },
-
     // loginuserの予想データが存在するかどうか
     isExistLoginuserPred() {
       const loginuserid = this.loginuser.id
@@ -323,7 +306,6 @@ export default {
       }
       return false
     },
-
     getLoginuserPeekTime() {
       const loginuserid = this.loginuser.id
       if (!this.preds[loginuserid]) {
@@ -507,19 +489,39 @@ export default {
     }
   },
   watch: {
-    store_bFetchingKabuValues(val) {
-      if (!val) {
-        if (!this.state.bSubmitting) {
-          // update form.value
-          this.updateChartData()
-        }
-      }
+    // vuexでKabuValuesの更新がかかると呼ばれる関数
+    kabuValues(val) {
+      // チャートデータを更新する
+      this.updateChartData()
+    },
+    // vuexでweekIndexが変更されると呼ばれる関数
+    weekIndex(val) {
+      this.updateChartData()
     }
   },
   mounted() {
     this.$store.dispatch('kabuValues/getKabuValues')
   },
   methods: {
+    // 今週分のデータだけ取得する関数
+    getCurrentWeekData() {
+      const result = []
+
+      for (const kabuValueId in this.kabuValues) {
+        const kabuValue = this.kabuValues[kabuValueId]
+
+        // 集計日付の範囲外ならcontinue
+        // beginDay, endDayの範囲内であれば, データセットに追加
+        const endDay = add(this.beginDay, { days: 7 })
+        if (isAfter(kabuValue.date, add(this.beginDay, { hours: -1 }))) {
+          if (isBefore(kabuValue.date, endDay)) {
+            result.push(kabuValue)
+          }
+        }
+      }
+
+      return result
+    },
     // vuexのKabuValuesが更新されたら呼ばれるイベント
     updateChartData() {
       // userのデータが読み取れなかったら, return
@@ -527,29 +529,13 @@ export default {
         return
       }
 
-      // 期間内の, ラベルのリストを取得
-      const _labelTotalCount = 7 * this.weekCount * 2 // あとでつかう
-
       // 上記の範囲内のデータセットを抽出する
-      const kabuValuesInChart = []
-
-      for (const kabuValueId in this.kabuValues) {
-        const kabuValue = this.kabuValues[kabuValueId]
-
-        // 集計日付の範囲外ならcontinue
-        // beginDay, endDayの範囲内であれば, データセットに追加
-        const endDay = add(this.beginDay, { days: 7 * this.weekCount })
-        if (isAfter(kabuValue.date, add(this.beginDay, { days: -1 }))) {
-          if (isBefore(kabuValue.date, endDay)) {
-            kabuValuesInChart.push(kabuValue)
-          }
-        }
-      }
+      const currentWeekDataSet = this.getCurrentWeekData()
 
       // 今週分のデータセットから, ユーザーごとにデータセットを作成
       // 月AM: 0 月PM: 1 火AM:2 ... とデータを作っていく
       const kabuValueEachUsers = {}
-      for (const kabuValue of kabuValuesInChart) {
+      for (const kabuValue of currentWeekDataSet) {
         const userid = kabuValue.userId
 
         const dayid = getDay(kabuValue.date)
@@ -567,7 +553,7 @@ export default {
       for (const userId in kabuValueEachUsers) {
         // ラベルの数だけデータを作成する
         const __d = []
-        for (let i = 0; i < _labelTotalCount; i++) {
+        for (let i = 0; i < 14; i++) {
           // もしvalueが存在しなければ, nullを代入する
           const value = kabuValueEachUsers[userId][i]
           if (value) {

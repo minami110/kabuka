@@ -55,8 +55,16 @@ const validKabuValue = (json) => {
 export const state = () => ({
   // idごとにkabuValueオブジェクトが入っている
   kabuValues: {},
+
+  // 現在APIと通信を行っているかどうかのフラグ
   bFetchingKabuValues: false,
-  weekIndex: 1
+
+  // アプリケーションで共通の, 現在表示している週のインデックス
+  // 20/3/22 が 1
+  weekIndex: 1,
+
+  // 現在表示しているweek
+  currentWeekKabuValuesByUsers: {}
 })
 
 export const getters = {

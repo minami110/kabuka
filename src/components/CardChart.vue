@@ -87,7 +87,6 @@ export default {
     ...mapGetters({
       users: 'users/users',
       kabuValues: 'kabuValues/kabuValues',
-      store_bFetchingKabuValues: 'kabuValues/bFetchingKabuValues',
       weekIndex: 'kabuValues/weekIndex'
     }),
     beginDay() {
@@ -137,6 +136,25 @@ export default {
       }
       return result
     },
+    // 今週分のデータだけ取得する関数
+    getCurrentWeekData() {
+      const result = []
+
+      for (const kabuValueId in this.kabuValues) {
+        const kabuValue = this.kabuValues[kabuValueId]
+
+        // 集計日付の範囲外ならcontinue
+        // beginDay, endDayの範囲内であれば, データセットに追加
+        const endDay = add(this.beginDay, { days: 7 })
+        if (isAfter(kabuValue.date, add(this.beginDay, { hours: -1 }))) {
+          if (isBefore(kabuValue.date, endDay)) {
+            result.push(kabuValue)
+          }
+        }
+      }
+
+      return result
+    },
     // チャートのデータを更新する関数
     updateChartData() {
       const result = {}
@@ -154,21 +172,8 @@ export default {
       // 期間内の, ラベルのリストを取得
       result.labels = this.getChartLabelList()
 
-      // 上記の範囲内のデータセットを抽出する
-      const kabuValuesInChart = []
-
-      for (const kabuValueId in this.kabuValues) {
-        const kabuValue = this.kabuValues[kabuValueId]
-
-        // 集計日付の範囲外ならcontinue
-        // beginDay, endDayの範囲内であれば, データセットに追加
-        const endDay = add(this.beginDay, { days: 7 })
-        if (isAfter(kabuValue.date, add(this.beginDay, { hours: -1 }))) {
-          if (isBefore(kabuValue.date, endDay)) {
-            kabuValuesInChart.push(kabuValue)
-          }
-        }
-      }
+      // 今週分のデータセットをフィルタ
+      const kabuValuesInChart = this.getCurrentWeekData()
 
       // 今週分のデータセットから, ユーザーごとにデータセットを作成
       // 月AM: 0 月PM: 1 火AM:2 ... とデータを作っていく
@@ -185,7 +190,7 @@ export default {
         kabuValueEachUsers[userid][index] = kabuValue.value
       }
 
-      // ユーザーごとにデータセットを作成
+      // ユーザーごとに, chart.js用のデータセットを作成
       result.datasets = []
       for (const userId in kabuValueEachUsers) {
         const user = this.users[userId]
