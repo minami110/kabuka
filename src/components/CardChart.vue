@@ -19,7 +19,7 @@
     </div>
     <div v-else>
       <line-chart
-        :chartdata="chartdata"
+        :chart-data="chartdata"
         :options="options"
         style="height:400px"
       />
@@ -35,7 +35,6 @@ import { mapGetters } from 'vuex'
 import format from 'date-fns/format'
 import startOfWeek from 'date-fns/startOfWeek'
 import add from 'date-fns/add'
-import parse from 'date-fns/parse'
 import getDay from 'date-fns/getDay'
 import isAfter from 'date-fns/isAfter'
 import isBefore from 'date-fns/isBefore'
@@ -100,9 +99,8 @@ export default {
           ]
         }
       },
-      state: {
-        bMounted: false
-      }
+      state: {},
+      chartdata: {}
     }
   },
   computed: {
@@ -122,20 +120,54 @@ export default {
       return format(day, 'M/d')
     },
     isFetchingKabuValues() {
-      if (!this.state.bMounted) {
-        return true
-      } else if (this.store_bFetchingKabuValues) {
+      if (this.store_bFetchingKabuValues) {
         return true
       } else {
         return false
       }
+    }
+  },
+  watch: {
+    // vuexでKabuValuesの更新がかかると呼ばれる関数
+    kabuValues(val) {
+      // チャートデータを更新する
+      this.updateChartData()
+    }
+  },
+  mounted() {
+    this.$store.dispatch('kabuValues/getKabuValues')
+  },
+  methods: {
+    getChartLabelList() {
+      // propsから, ラベルを作成
+      // AM / PMごとにラベルを作成する
+      const result = []
+      const _labelTotalCount = 7 * this.weekCount * 2
+      for (let i = 0; i < _labelTotalCount; i++) {
+        const _dayDelta = i / 2
+        const _d = add(this.beginDay, { days: _dayDelta })
+        let _ds = format(_d, 'M/d(E)')
+        if (i % 2) {
+          _ds += ' PM'
+        } else {
+          _ds += ' AM'
+        }
+        result.push(_ds)
+      }
+      return result
     },
-    chartdata() {
+    // チャートのデータを更新する関数
+    updateChartData() {
       const result = {}
 
       // userのデータが読み取れなかったら, return
       if (Object.keys(this.users).length < 1) {
-        return result
+        return
+      }
+
+      // kabuValuesが空なら, return
+      if (this.kabuValues.length < 1) {
+        return
       }
 
       // 期間内の, ラベルのリストを取得
@@ -149,20 +181,10 @@ export default {
         const kabuValue = this.kabuValues[kabuValueId]
 
         // 集計日付の範囲外ならcontinue
-        // Mon Mar 23 2020 00:00:00 GMT+0900 (日本標準時)
-        // という形式で来る
-        let dateStr = kabuValue.date
-        dateStr = dateStr.split(' GMT')[0]
-        const parsedDate = parse(
-          dateStr,
-          'EEE MMM dd yyyy HH:mm:ss',
-          new Date()
-        )
-
         // beginDay, endDayの範囲内であれば, データセットに追加
         const endDay = add(this.beginDay, { days: 7 * this.weekCount })
-        if (isAfter(parsedDate, add(this.beginDay, { days: -1 }))) {
-          if (isBefore(parsedDate, endDay)) {
+        if (isAfter(kabuValue.date, this.beginDay)) {
+          if (isBefore(kabuValue.date, endDay)) {
             kabuValuesInChart.push(kabuValue)
           }
         }
@@ -173,16 +195,7 @@ export default {
       const kabuValueEachUsers = {}
       for (const kabuValue of kabuValuesInChart) {
         const userid = kabuValue.userId
-
-        let dateStr = kabuValue.date
-        dateStr = dateStr.split(' GMT')[0]
-        const parsedDate = parse(
-          dateStr,
-          'EEE MMM dd yyyy HH:mm:ss',
-          new Date()
-        )
-
-        const dayid = getDay(parsedDate)
+        const dayid = getDay(kabuValue.date)
         const isPm = kabuValue.isPm
         const index = dayid * 2 + Number(isPm)
 
@@ -223,43 +236,7 @@ export default {
         result.datasets.push(_data)
       }
 
-      // ユーザーが購入した価格のデータを入力
-      /*
-      result.datasets.push({
-        label: "購入価格",
-        borderColor: "#366",
-        backgroundColor: "rgba(0 ,0,0,0)",
-        spanGaps: true,
-        lineTension: 0,
-        data: [200, , , , , , , , , , , 200]
-      });
-      */
-
-      return result
-    }
-  },
-  async mounted() {
-    await this.$store.dispatch('kabuValues/getKabuValues')
-    this.state.bMounted = true
-  },
-  methods: {
-    getChartLabelList() {
-      // propsから, ラベルを作成
-      // AM / PMごとにラベルを作成する
-      const result = []
-      const _labelTotalCount = 7 * this.weekCount * 2
-      for (let i = 0; i < _labelTotalCount; i++) {
-        const _dayDelta = i / 2
-        const _d = add(this.beginDay, { days: _dayDelta })
-        let _ds = format(_d, 'M/d(E)')
-        if (i % 2) {
-          _ds += ' PM'
-        } else {
-          _ds += ' AM'
-        }
-        result.push(_ds)
-      }
-      return result
+      this.chartdata = result
     }
   }
 }

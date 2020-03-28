@@ -744,6 +744,9 @@ export class Detector {
     // === 月曜AM時点の予測 ===
     if (currentTimeIndex < 2) {
       // 現在時間が月曜AM以前なら, ここで終了する
+      result.addAdvice(
+        '月曜AMのカブ買取価格は予測に重要なので, なるべく入力しましょう!'
+      )
       return result
     }
     // 月曜AMの予測モデルを実施, TypeAならreturn

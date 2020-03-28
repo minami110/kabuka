@@ -111,16 +111,19 @@
         <h5 class="mt-3">ジリ貧型(poor)</h5>
         <li>値下がりしかしない最悪のパターン😢</li>
         <li>
-          木曜AMまではP3, P4に変動する可能性があるので,
+          木曜PMまではP3, P4に変動する可能性があるので,
           諦めずに販売価格を眺めよう
         </li>
       </div>
 
       <b-card class="mt-4">
-        <h5>🏝️🏝️ {{ loginuser.islandName }}島のカブは... 🏝️🏝️</h5>
+        <h5>🏝️🏝️ {{ loginuser.islandName }}島の値動きは... 🏝️🏝️</h5>
 
         <div v-if="isExistLoginuserPred">
-          <div v-if="preds[loginuser.id].movingTypes.length > 1">
+          <div v-if="preds[loginuser.id].movingTypes.length == 4">
+            まだ未確定です
+          </div>
+          <div v-else-if="preds[loginuser.id].movingTypes.length > 1">
             <strong
               v-for="type in preds[loginuser.id].movingTypes"
               :key="type"
@@ -191,7 +194,6 @@
             <li>
               抜けているデータが測定に使用された場合, 予測精度が低下します.
             </li>
-            >
             <li>結果が複数表示されている場合は, 候補がいくつかある状態です</li>
             <li>
               アツいしまは, これからピークが訪れる, 予測精度の高いしまです
@@ -212,7 +214,6 @@ import { mapGetters } from 'vuex'
 import format from 'date-fns/format'
 import startOfWeek from 'date-fns/startOfWeek'
 import add from 'date-fns/add'
-import parse from 'date-fns/parse'
 import getDay from 'date-fns/getDay'
 import isAfter from 'date-fns/isAfter'
 import isBefore from 'date-fns/isBefore'
@@ -529,20 +530,10 @@ export default {
         const kabuValue = this.kabuValues[kabuValueId]
 
         // 集計日付の範囲外ならcontinue
-        // Mon Mar 23 2020 00:00:00 GMT+0900 (日本標準時)
-        // という形式で来る
-        let dateStr = kabuValue.date
-        dateStr = dateStr.split(' GMT')[0]
-        const parsedDate = parse(
-          dateStr,
-          'EEE MMM dd yyyy HH:mm:ss',
-          new Date()
-        )
-
         // beginDay, endDayの範囲内であれば, データセットに追加
         const endDay = add(this.beginDay, { days: 7 * this.weekCount })
-        if (isAfter(parsedDate, add(this.beginDay, { days: -1 }))) {
-          if (isBefore(parsedDate, endDay)) {
+        if (isAfter(kabuValue.date, add(this.beginDay, { days: -1 }))) {
+          if (isBefore(kabuValue.date, endDay)) {
             kabuValuesInChart.push(kabuValue)
           }
         }
@@ -554,15 +545,7 @@ export default {
       for (const kabuValue of kabuValuesInChart) {
         const userid = kabuValue.userId
 
-        let dateStr = kabuValue.date
-        dateStr = dateStr.split(' GMT')[0]
-        const parsedDate = parse(
-          dateStr,
-          'EEE MMM dd yyyy HH:mm:ss',
-          new Date()
-        )
-
-        const dayid = getDay(parsedDate)
+        const dayid = getDay(kabuValue.date)
         const isPm = kabuValue.isPm
         const index = dayid * 2 + Number(isPm)
 

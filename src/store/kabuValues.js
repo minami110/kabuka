@@ -1,6 +1,51 @@
 import format from 'date-fns/format'
+import parse from 'date-fns/parse'
+import setHours from 'date-fns/setHours'
+
+// GASのレスポンスをValidationする関数
+const validKabuValue = (json) => {
+  const dataRaw = json
+
+  try {
+    // dateを date_fns オブジェクトにする
+    // Mon Mar 23 2020 00:00:00 GMT+0900 (日本標準時)
+    // という形式で来る
+    let dateStr = dataRaw.date
+    dateStr = dateStr.split(' GMT')[0]
+    let parsedDate = parse(dateStr, 'EEE MMM dd yyyy HH:mm:ss', new Date())
+
+    // isPmをbooleanにする
+    const isPmBool = Boolean(Number(dataRaw.isPm))
+
+    // ついでにdateも午後か午前かの情報を入れておく
+    if (isPmBool) {
+      parsedDate = setHours(parsedDate, 13)
+    } else {
+      parsedDate = setHours(parsedDate, 1)
+    }
+
+    // userIdをstrにする
+    // 現状数字だけれど, uuidのような形式がきてもいいようにする
+    const userIdNum = String(dataRaw.userId)
+
+    // valueをnumberにする
+    const valueNum = Number(dataRaw.value)
+
+    // オブジェクトを作成する
+    return {
+      id: dataRaw.id,
+      date: parsedDate,
+      isPm: isPmBool,
+      userId: userIdNum,
+      value: valueNum
+    }
+  } catch (e) {
+    return null
+  }
+}
 
 export const state = () => ({
+  // idごとにkabuValueオブジェクトが入っている
   kabuValues: {},
   bFetchingKabuValues: false
 })
@@ -15,23 +60,29 @@ export const getters = {
 }
 
 export const mutations = {
-  set_kabuValues(state, dates) {
-    for (const index in dates) {
-      const kabuValue = dates[index]
-      if (kabuValue.id) {
+  set_kabuValues(state, datas) {
+    for (const index in datas) {
+      // convert GAS got objects to valid object data
+      const kabuValue = validKabuValue(datas[index])
+      if (kabuValue) {
         state.kabuValues = { ...state.kabuValues, [kabuValue.id]: kabuValue }
       }
     }
   },
-  set_kabuValue(state, date) {
-    state.kabuValues = { ...state.kabuValues, [date.id]: date }
+  set_kabuValue(state, data) {
+    const kabuValue = validKabuValue(data)
+    if (kabuValue) {
+      state.kabuValues = { ...state.kabuValues, [kabuValue.id]: kabuValue }
+    }
   },
+  // APIと通信中かどうかのフラグを設定する
   set_bFetchingKabuValues(state, bool) {
     state.bFetchingKabuValues = bool
   }
 }
 
 export const actions = {
+  // APIと通信を行う
   async getKabuValues({ state, commit }) {
     if (state.bFetchingKabuValues) {
       // already fetching
@@ -84,9 +135,6 @@ export const actions = {
     { state, commit, dispatch },
     { date, isPm, userId, value }
   ) {
-    // 投稿前に, カブ値のデータを最新の状態に更新する
-    await dispatch('getKabuValues')
-
     // データの型変換を行う
     const isPmNum = isPm ? 1 : 0
     const dateStrJa = format(date, 'yyyy/MM/dd')
@@ -95,13 +143,6 @@ export const actions = {
     // [user-id]-[date]-[isPm]
     const dateForId = format(date, 'yyyyMMdd')
     const id = dateForId + '-' + String(isPmNum) + '-' + String(userId)
-
-    // すでに存在している存在しているIDなら更新, なければ新規作成を行う
-    let bUpdate = false
-    if (state.kabuValues[id]) {
-      console.log('already existed kabuValue. update old value.')
-      bUpdate = true
-    }
 
     // application/x-www-form-urlencoded 用のpayloadを作成
     const params = new URLSearchParams()
@@ -121,42 +162,38 @@ export const actions = {
     }
 
     // GAS API endpoint
-    // https://script.google.com/d/1ywc9_hTS32gLsKn8g579dh9l_EodEPxEAwxO20Z5e2TLW2DuhiEe6JHT/edit
-    let url =
+    const url =
       'https://script.google.com/macros/s/AKfycbxtILUd-tZEVU_SnXwCUxVfOF-XhhGThRKBZ0bfMFR_6O-g3Gg/exec'
 
-    // if update date, append action query
-    if (bUpdate) {
-      url += '?action=update'
+    try {
+      await fetch(url, options)
+        .catch((e) => {
+          throw new Error(e)
+        })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(response.statusText)
+          }
+          return response.json()
+        })
+        .then((responseAsJson) => {
+          return true
+        })
+        .catch((e) => {
+          throw new Error(e)
+        })
+    } catch (e) {
+      // GASのPOST, レスポンスを返さないので, エラーになる
     }
 
-    await fetch(url, options)
-      .catch((e) => {
-        throw new Error(e)
-      })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(response.statusText)
-        }
-        return response.json()
-      })
-      .then((responseAsJson) => {
-        return true
-      })
-      .catch(function(error) {
-        console.log('Looks like there was a problem: \n', error)
-        return false
-      })
-
     // 送信後に, ローカルでデータを追加しておく
-    /*
-        commit("set_kabuValue", {
-            id: id,
-            date: dateStrJa + "00:00:00 GMT",
-            isPm: isPmNum,
-            userId: userId,
-            value, value
-        })
-        */
+    const datestrtmp = format(date, 'E MMM d yyyy HH:mm:ss')
+    commit('set_kabuValue', {
+      id,
+      date: datestrtmp + ' GMT+0900 (日本うんたら)',
+      isPm: isPmNum,
+      userId,
+      value
+    })
   }
 }
