@@ -71,6 +71,9 @@ export default {
     })
   },
   async mounted() {
+    // initialize state
+    this.$store.dispatch('kabuValues/Init')
+
     // fetch users data from spleadsheet
     this.bFetchingData = true
     await Promise.all([this.$store.dispatch('users/getUsers')])
