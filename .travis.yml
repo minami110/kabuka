@@ -30,7 +30,7 @@ script:
   # coveralls
   - cat ./coverage/lcov.info | ./node_modules/.bin/coveralls
   # start build
-   - npm run generate
+  - npm run generate
 
 deploy:
   provider: pages
