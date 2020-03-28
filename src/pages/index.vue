@@ -24,7 +24,7 @@
     </b-col>
 
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
-      <card-chart />
+      <card-chart :begin-day="new Date(2020, 2, 24)" />
     </b-col>
 
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
@@ -71,6 +71,9 @@ export default {
     })
   },
   async mounted() {
+    // initialize state
+    this.$store.dispatch('kabuValues/Init')
+
     // fetch users data from spleadsheet
     this.bFetchingData = true
     await Promise.all([this.$store.dispatch('users/getUsers')])

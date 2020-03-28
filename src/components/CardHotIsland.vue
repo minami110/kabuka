@@ -21,7 +21,12 @@
       <!-- 型が確定している島のリスト -->
       <!-- ソートができる, ピークが近い順, 買取価格が高い順 -->
 
-      <b-nav class="mt-3 border-bottom border-secondary" small pills>
+      <b-nav
+        class="mt-3 border-bottom border-secondary"
+        small
+        pills
+        style="font-size:0.5rem"
+      >
         <b-nav-item
           :active="state.tableIndex == 0"
           @click="state.tableIndex = 0"
@@ -48,6 +53,7 @@
             small
             :items="items_next"
             :fields="fields_next"
+            style="fontsize:0.8rem"
           ></b-table>
         </div>
         <div v-else class="p-3 text-muted small text-center">
@@ -64,6 +70,7 @@
             small
             :items="items_all"
             :fields="fields_next"
+            style="font-size:0.8rem"
           ></b-table>
         </div>
         <div v-else class="p-3 text-muted small text-center">
@@ -268,7 +275,7 @@ export default {
         },
         {
           key: 'ambiguous_weight',
-          label: '予想精度(0が最高)',
+          label: '精度',
           sortable: true
         }
       ],

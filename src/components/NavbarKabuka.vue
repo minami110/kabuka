@@ -10,6 +10,11 @@
     </b-navbar-toggle>
 
     <b-collapse id="navbar-toggle-collapse" is-nav>
+      <b-navbar-nav v-if="isLogginned" small>
+        <b-nav-item @click="prevWeek"><b-icon-caret-left-fill /></b-nav-item>
+        <b-nav-item disabled>W-{{ weekIndex }}</b-nav-item>
+        <b-nav-item @click="nextWeek"><b-icon-caret-right-fill /></b-nav-item>
+      </b-navbar-nav>
       <b-navbar-nav v-if="isLogginned" class="ml-auto" small>
         <b-nav-item-dropdown right size="sm">
           <!-- Using 'button-content' slot -->
@@ -31,15 +36,22 @@
 <script>
 import { mapGetters } from 'vuex'
 
-import { BIconThreeDots } from 'bootstrap-vue'
+import {
+  BIconThreeDots,
+  BIconCaretLeftFill,
+  BIconCaretRightFill
+} from 'bootstrap-vue'
 
 export default {
   components: {
-    BIconThreeDots
+    BIconThreeDots,
+    BIconCaretLeftFill,
+    BIconCaretRightFill
   },
   computed: {
     ...mapGetters({
-      loginuser: 'users/loginuser'
+      loginuser: 'users/loginuser',
+      weekIndex: 'kabuValues/weekIndex'
     }),
     isLogginned() {
       if (this.loginuser) {
@@ -80,6 +92,18 @@ export default {
             this.$router.replace({ query })
           }
         })
+    },
+    prevWeek(e) {
+      e.preventDefault()
+      this.$store.dispatch({
+        type: 'kabuValues/DecrementWeekIndex'
+      })
+    },
+    nextWeek(e) {
+      e.preventDefault()
+      this.$store.dispatch({
+        type: 'kabuValues/IncrementWeekIndex'
+      })
     }
   }
 }

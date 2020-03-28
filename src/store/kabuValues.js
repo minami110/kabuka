@@ -1,6 +1,14 @@
 import format from 'date-fns/format'
 import parse from 'date-fns/parse'
 import setHours from 'date-fns/setHours'
+import differenceInWeeks from 'date-fns/differenceInWeeks'
+
+// 現在のweekIndexを取得する関数, 20/03/22 を 1とする
+const GetNowWeekIndex = () => {
+  const ZeroDay = new Date(2020, 2, 15)
+  const now = new Date()
+  return differenceInWeeks(now, ZeroDay)
+}
 
 // GASのレスポンスをValidationする関数
 const validKabuValue = (json) => {
@@ -47,7 +55,8 @@ const validKabuValue = (json) => {
 export const state = () => ({
   // idごとにkabuValueオブジェクトが入っている
   kabuValues: {},
-  bFetchingKabuValues: false
+  bFetchingKabuValues: false,
+  weekIndex: 1
 })
 
 export const getters = {
@@ -56,10 +65,19 @@ export const getters = {
   },
   bFetchingKabuValues: (state) => {
     return state.bFetchingKabuValues
+  },
+  // チャートなどの表示が週単位で, そこのIndex
+  // 3/22~ を 1とする
+  weekIndex: (state) => {
+    return state.weekIndex
   }
 }
 
 export const mutations = {
+  state_init(state) {
+    state.bFetchingKabuValues = false
+    state.weekIndex = GetNowWeekIndex()
+  },
   set_kabuValues(state, datas) {
     for (const index in datas) {
       // convert GAS got objects to valid object data
@@ -78,10 +96,23 @@ export const mutations = {
   // APIと通信中かどうかのフラグを設定する
   set_bFetchingKabuValues(state, bool) {
     state.bFetchingKabuValues = bool
+  },
+  // 週のIndexを一つ前へ
+  DecrementWeekIndex(state) {
+    state.weekIndex = Math.max(1, state.weekIndex - 1)
+  },
+  // 週のIndexを一つ後へ
+  IncrementWeekIndex(state) {
+    state.weekIndex = Math.min(GetNowWeekIndex(), state.weekIndex + 1)
   }
 }
 
 export const actions = {
+  // このモジュールを初期化する
+  Init({ commit }) {
+    commit('state_init')
+  },
+
   // APIと通信を行う
   async getKabuValues({ state, commit }) {
     if (state.bFetchingKabuValues) {
@@ -195,5 +226,12 @@ export const actions = {
       userId,
       value
     })
+  },
+
+  DecrementWeekIndex({ commit }) {
+    commit('DecrementWeekIndex')
+  },
+  IncrementWeekIndex({ commit }) {
+    commit('IncrementWeekIndex')
   }
 }

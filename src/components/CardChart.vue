@@ -7,21 +7,15 @@
         <span>{{ beginDayStr }}</span>
         <span>~</span>
         <span>{{ endDayStr }}</span>
-        <span class="small text-muted">(Week: {{ getWeekIndex }})</span>
+        <span class="small text-muted">(W-{{ weekIndex }})</span>
       </h5>
     </b-card-title>
 
-    <div v-if="isFetchingKabuValues">
-      <b-col cols="12" class="text-center">
-        <strong>カブ値のデータを読込中...</strong>
-        <b-spinner small label="Spinning"></b-spinner>
-      </b-col>
-    </div>
-    <div v-else>
+    <div>
       <line-chart
         :chart-data="chartdata"
         :options="options"
-        style="height:400px"
+        style="height:380px"
       />
     </div>
   </b-card>
@@ -33,12 +27,11 @@ import { mapGetters } from 'vuex'
 
 // import date-fns functions
 import format from 'date-fns/format'
-import startOfWeek from 'date-fns/startOfWeek'
 import add from 'date-fns/add'
 import getDay from 'date-fns/getDay'
 import isAfter from 'date-fns/isAfter'
 import isBefore from 'date-fns/isBefore'
-import differenceInWeeks from 'date-fns/differenceInWeeks'
+import addWeeks from 'date-fns/addWeeks'
 
 // import components
 import LineChart from '~/components/LineChart'
@@ -46,18 +39,6 @@ import LineChart from '~/components/LineChart'
 export default {
   components: {
     LineChart
-  },
-  props: {
-    // chartの開始日, デフォルトは今週の日曜日
-    beginDay: {
-      type: Date,
-      default: () => startOfWeek(new Date())
-    },
-    // chartの表示期間(1週間単位)
-    weekCount: {
-      type: Number,
-      default: 1
-    }
   },
   data() {
     return {
@@ -99,7 +80,6 @@ export default {
           ]
         }
       },
-      state: {},
       chartdata: {}
     }
   },
@@ -107,24 +87,20 @@ export default {
     ...mapGetters({
       users: 'users/users',
       kabuValues: 'kabuValues/kabuValues',
-      store_bFetchingKabuValues: 'kabuValues/bFetchingKabuValues'
+      store_bFetchingKabuValues: 'kabuValues/bFetchingKabuValues',
+      weekIndex: 'kabuValues/weekIndex'
     }),
-    getWeekIndex() {
-      return differenceInWeeks(this.beginDay, new Date(2020, 2, 14))
+    beginDay() {
+      return addWeeks(new Date(2020, 2, 15), this.weekIndex)
     },
     beginDayStr() {
+      // weekIndexに基づいて 開始日を求める
       return format(this.beginDay, 'M/d')
     },
     endDayStr() {
-      const day = add(this.beginDay, { days: 7 * this.weekCount - 1 })
-      return format(day, 'M/d')
-    },
-    isFetchingKabuValues() {
-      if (this.store_bFetchingKabuValues) {
-        return true
-      } else {
-        return false
-      }
+      // weekIndexに基づいて 終了日を求める
+      const endDay = addWeeks(new Date(2020, 2, 14), this.weekIndex + 1)
+      return format(endDay, 'M/d')
     }
   },
   watch: {
@@ -132,9 +108,14 @@ export default {
     kabuValues(val) {
       // チャートデータを更新する
       this.updateChartData()
+    },
+    // vuexでweekIndexが変更されると呼ばれる関数
+    weekIndex(val) {
+      this.updateChartData()
     }
   },
   mounted() {
+    // APIから全カブデータ取得
     this.$store.dispatch('kabuValues/getKabuValues')
   },
   methods: {
@@ -142,7 +123,7 @@ export default {
       // propsから, ラベルを作成
       // AM / PMごとにラベルを作成する
       const result = []
-      const _labelTotalCount = 7 * this.weekCount * 2
+      const _labelTotalCount = 14
       for (let i = 0; i < _labelTotalCount; i++) {
         const _dayDelta = i / 2
         const _d = add(this.beginDay, { days: _dayDelta })
@@ -172,7 +153,6 @@ export default {
 
       // 期間内の, ラベルのリストを取得
       result.labels = this.getChartLabelList()
-      const _labelTotalCount = 7 * this.weekCount * 2 // あとでつかう
 
       // 上記の範囲内のデータセットを抽出する
       const kabuValuesInChart = []
@@ -182,8 +162,8 @@ export default {
 
         // 集計日付の範囲外ならcontinue
         // beginDay, endDayの範囲内であれば, データセットに追加
-        const endDay = add(this.beginDay, { days: 7 * this.weekCount })
-        if (isAfter(kabuValue.date, this.beginDay)) {
+        const endDay = add(this.beginDay, { days: 7 })
+        if (isAfter(kabuValue.date, add(this.beginDay, { hours: -1 }))) {
           if (isBefore(kabuValue.date, endDay)) {
             kabuValuesInChart.push(kabuValue)
           }
@@ -212,7 +192,7 @@ export default {
 
         // ラベルの数だけデータを作成する
         const __d = []
-        for (let i = 0; i < _labelTotalCount; i++) {
+        for (let i = 0; i < 14; i++) {
           // もしvalueが存在しなければ, nullを代入する
           const value = kabuValueEachUsers[userId][i]
           if (value) {
