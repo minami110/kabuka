@@ -100,6 +100,7 @@ import getHours from 'date-fns/getHours'
 import isValid from 'date-fns/isValid'
 import isBefore from 'date-fns/isBefore'
 import isSunday from 'date-fns/isSunday'
+import startOfWeek from 'date-fns/startOfWeek'
 
 export default {
   props: {
@@ -236,17 +237,14 @@ export default {
 
     // detect current time
     const hours = getHours(this.now)
-    if (hours > 11) {
+    if (hours < 5 && hours > 11) {
       this.form.isPm = true
     } else {
       this.form.isPM = false
     }
 
     // init data for form date
-    this.calender.minDate = new Date()
-    this.calender.minDate.setFullYear(2020)
-    this.calender.minDate.setMonth(3 - 1)
-    this.calender.minDate.setDate(20)
+    this.calender.minDate = startOfWeek(this.now)
     this.calender.maxData = this.now
 
     // fetch KabuValues background
