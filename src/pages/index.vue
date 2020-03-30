@@ -13,13 +13,9 @@
       <card-login v-if="!loginuser.id" />
 
       <!-- loginuser.id があれば, ユーザーカードを表示 -->
-      <card-user
-        v-else
-        @logout="makeToast('logout!', 'Succeed to logout', 'success')"
-      />
+      <card-user v-else />
     </b-col>
 
-    <!--
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
       <card-hot-island />
     </b-col>
@@ -27,7 +23,6 @@
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
       <card-chart />
     </b-col>
-    -->
 
     <b-col v-if="loginuser.id" cols="12" class="mt-3">
       <card-links />
@@ -50,16 +45,16 @@ import { mapGetters } from 'vuex'
 import CardLogin from '~/components/CardLogin'
 import CardUser from '~/components/CardUser'
 import CardLinks from '~/components/CardLinks'
-// import CardChart from '~/components/CardChart'
-// import CardHotIsland from '~/components/CardHotIsland'
+import CardChart from '~/components/CardChart'
+import CardHotIsland from '~/components/CardHotIsland'
 
 export default {
   components: {
     CardLogin,
     CardUser,
-    CardLinks
-    // CardChart,
-    // CardHotIsland
+    CardLinks,
+    CardChart,
+    CardHotIsland
   },
   data() {
     return {

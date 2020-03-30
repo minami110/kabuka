@@ -23,6 +23,9 @@ export const mutations = {
       const user = users[index]
       if (user.name) {
         switch (user.id) {
+          case '0':
+            user.color = '#ffd700'
+            break
           case '1':
             user.color = '#B8860B'
             break
@@ -31,6 +34,9 @@ export const mutations = {
             break
           case '3':
             user.color = '#5F9EA0'
+            break
+          case '4':
+            user.color = '#808000'
             break
           case '5':
             user.color = '#336699'
@@ -41,11 +47,26 @@ export const mutations = {
           case '7':
             user.color = '#996699'
             break
+          case '8':
+            user.color = '#483d8b'
+            break
           case '9':
             user.color = '#993300'
             break
           case '10':
             user.color = '#006633'
+            break
+          case '11':
+            user.color = '#8b0000'
+            break
+          case '12':
+            user.color = '#20b2aa'
+            break
+          case '13':
+            user.color = '#8670A5'
+            break
+          case '14':
+            user.color = '#ff6347'
             break
           default:
             user.color = '#555'

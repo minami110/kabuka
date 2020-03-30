@@ -11,9 +11,13 @@
 
     <b-collapse id="navbar-toggle-collapse" is-nav>
       <b-navbar-nav v-if="isLogginned" small>
-        <b-nav-item @click="prevWeek"><b-icon-caret-left-fill /></b-nav-item>
+        <b-nav-item @click="prevWeek">
+          <b-icon-caret-left-fill />
+        </b-nav-item>
         <b-nav-item disabled>W-{{ weekIndex }}</b-nav-item>
-        <b-nav-item @click="nextWeek"><b-icon-caret-right-fill /></b-nav-item>
+        <b-nav-item @click="nextWeek">
+          <b-icon-caret-right-fill />
+        </b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav v-if="isLogginned" class="ml-auto" small>
         <b-nav-item-dropdown right size="sm">
@@ -98,6 +102,7 @@ export default {
       this.$store.dispatch({
         type: 'kabuValues/DecrementWeekIndex'
       })
+      this.$store.dispatch('kabuValues/getKabuValues')
     },
     nextWeek(e) {
       e.preventDefault()
