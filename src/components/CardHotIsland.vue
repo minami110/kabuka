@@ -242,7 +242,7 @@ export default {
 
         {
           key: 'type',
-          label: '値動きタイプ',
+          label: '値動き',
           sortable: true
         },
         {
