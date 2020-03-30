@@ -237,7 +237,7 @@ export default {
 
     // detect current time
     const hours = getHours(this.now)
-    if (hours < 5 && hours > 11) {
+    if (hours < 5 || hours > 11) {
       this.form.isPm = true
     } else {
       this.form.isPM = false
