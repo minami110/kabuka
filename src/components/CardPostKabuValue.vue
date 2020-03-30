@@ -19,12 +19,6 @@
       <b-form-row>
         <!-- カブ値入力フィールド -->
         <b-col cols="12">
-          <ul>
-            <li>現在spleadsheetとの統合作業を行っております</li>
-            <li>しばらくのあいだ, このサイトではデータが取得できませんが</li>
-            <li>現在のカブ値送信はできます</li>
-            <li>数日中に復旧いたします, ご迷惑をおかけいたします</li>
-          </ul>
           <b-form-group>
             <b-input-group prepend="💰" append="ベル" size="sm">
               <b-input

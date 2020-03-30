@@ -2,6 +2,7 @@ import format from 'date-fns/format'
 import parse from 'date-fns/parse'
 import setHours from 'date-fns/setHours'
 import differenceInWeeks from 'date-fns/differenceInWeeks'
+import isSunday from 'date-fns/isSunday'
 
 // 現在のweekIndexを取得する関数, 20/03/22 を 1とする
 const GetNowWeekIndex = () => {
@@ -30,6 +31,11 @@ const validKabuValue = (json) => {
       parsedDate = setHours(parsedDate, 13)
     } else {
       parsedDate = setHours(parsedDate, 1)
+    }
+
+    // 日曜かつPmのデータは, 破棄する
+    if (isSunday(parsedDate) && isPmBool) {
+      return null
     }
 
     // userIdをstrにする
@@ -142,8 +148,12 @@ export const actions = {
     }
     let kabuValues = []
 
-    const url =
+    let url =
       'https://script.google.com/macros/s/AKfycbxmf6MCX6ClhQzd0ZgEr0UOBfRRR6U7aSf4QfLvcneMHIMXbXI/exec'
+
+    // 現在のweekIndexクエリを付与する
+    url += '?week=' + state.weekIndex
+
     await fetch(url, options)
       .catch((e) => {
         throw new Error(e)
